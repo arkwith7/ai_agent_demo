@@ -6,7 +6,7 @@
 사용자는 자연어로 투자 관련 질문을 입력하고, AI Agent가 다양한 툴(예: BuffettFilterTool, NewsTool, ValuationTool)을 호출하여 데이터를 수집, 가공, 해석한 후 종목 추천 결과를 반환합니다.
 
 ## 프로젝트 구조
-
+```
 /ai_agent_demo
 ├── frontend/
 │   ├── main.py                # 전체 앱 진입점 (랜딩 페이지 및 내비게이션 처리)
@@ -38,6 +38,38 @@
 ├── Dockerfile  
 ├── requirements.txt
 └── README.md # 프로젝트 개요 및 실행 방법 안내
+
+.
+├── frontend
+│   ├── chat_page.py
+│   ├── landing_page.py
+│   ├── main.py
+│   ├── report_page.py
+│   ├── resources
+│   │   ├── css
+│   │   └── images
+│   ├── simulation_page.py
+│   ├── streamlit_app.py
+│   └── utils.py
+├── backend
+│   ├── api
+│   │   ├── auth.py
+│   │   ├── chat.py
+│   │   └── user.py
+│   ├── core
+│   │   ├── agent.py
+│   │   └── tools
+│   │       └── buffett_filter_tool.py
+│   ├── db.py
+│   ├── main.py
+│   ├── models
+│   │   └── models.py
+│   └── security.py
+├── Dockerfile
+├── README.md
+└── requirements.txt
+
+```
 
 ## 기술 환경
 
