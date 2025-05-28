@@ -1,0 +1,14 @@
+FastAPI
+SQLAlchemy
+streamlit
+langchain
+python-dotenv
+uvicorn
+pydantic
+httpx
+jwt
+pytest
+pytest-asyncio
+tiktoken
+openai
+azure-identity
