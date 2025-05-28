@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 소개 - AI Agent 주식 분석 비서</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        header { background: #333; color: #fff; padding: 1rem 0; text-align: center; }
+        nav ul { padding: 0; list-style: none; text-align: center; background: #444; }
+        nav ul li { display: inline; margin-right: 20px; }
+        nav ul li a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; }
+        nav ul li a:hover { background: #555; }
+        .container { width: 80%; margin: auto; overflow: hidden; padding: 20px; background-color: #fff; }
+        .page-title { text-align: center; margin-bottom: 30px; padding-bottom:10px; border-bottom: 2px solid #333;}
+        .content-section { margin-bottom: 30px; }
+        .content-section h2 { color: #333; }
+        .content-section p { margin-bottom: 15px; }
+        footer { text-align: center; padding: 20px; background: #333; color: #fff; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI Agent 기반 주식 분석 비서</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">홈</a></li>
+            <li><a href="ai_agent_introduction.html">AI Agent 소개</a></li>
+            <li><a href="key_features_experience.html">핵심 기능 체험</a></li>
+            <li><a href="warren_buffett_principles.html">워런 버핏 투자 원칙</a></li>
+            <li><a href="start_demo.html">데모 시작하기</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">AI Agent 소개</h1>
+
+        <section class="content-section">
+            <h2>AI Agent란 무엇인가요?</h2>
+            <p>AI Agent(인공지능 에이전트)는 특정 목표를 달성하기 위해 환경을 인지하고, 스스로 판단하며, 자율적으로 행동하는 지능형 시스템을 의미합니다. 기존의 AI가 특정 작업(예: 이미지 분류, 번역)에 특화되었다면, AI Agent는 보다 복잡하고 동적인 환경에서 사용자의 요청이나 목표에 따라 다양한 도구와 지식을 활용하여 문제를 해결하는 데 중점을 둡니다.</p>
+            <p>주요 특징은 다음과 같습니다:</p>
+            <ul>
+                <li><strong>자율성 (Autonomy):</strong> 외부의 직접적인 통제 없이 스스로 결정을 내리고 작업을 수행합니다.</li>
+                <li><strong>목표 지향성 (Goal-oriented):</strong> 주어진 목표를 달성하기 위해 일련의 행동을 계획하고 실행합니다.</li>
+                <li><strong>반응성 (Reactivity):</strong> 변화하는 환경을 감지하고 그에 맞춰 적절히 대응합니다.</li>
+                <li><strong>추론 및 학습 (Reasoning & Learning):</strong> 경험을 통해 학습하고, 새로운 상황에 대한 추론 능력을 발휘합니다.</li>
+                <li><strong>도구 사용 (Tool Usage):</strong> 필요에 따라 외부 API, 데이터베이스, 분석 모델 등 다양한 도구를 활용합니다.</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>본 데모의 AI Agent는 어떻게 작동하나요?</h2>
+            <p>이 데모에서 체험하실 AI Agent는 주식 분석 및 종목 추천에 특화되어 있습니다.</p>
+            <ol>
+                <li><strong>사용자 요청 이해:</strong> 사용자가 자연어로 입력한 투자 기준이나 질문(예: "최근 3년 ROE 15% 이상이고, 시가총액 상위 30% 이내인 반도체 기업 찾아줘")을 이해합니다.</li>
+                <li><strong>분석 계획 수립:</strong> 요청을 만족시키기 위해 어떤 데이터가 필요하고, 어떤 분석 도구를 사용해야 할지 계획을 세웁니다.</li>
+                <li><strong>정보 수집 및 가공 (도구 사용):</strong> KRX(한국거래소) 정보, OpenDART(전자공시시스템) 재무제표 데이터 등을 조회하고, 필요한 지표(ROE, 순이익률, FCF 등)를 계산합니다.</li>
+                <li><strong>조건 필터링 및 분석:</strong> 사용자가 제시한 기준(워런 버핏 투자 기준 6단계 등)에 따라 기업들을 필터링하고 분석합니다.</li>
+                <li><strong>결과 제시 및 설명:</strong> 분석 결과를 사용자에게 제시하고, 어떤 근거로 해당 결과가 도출되었는지 그 과정을 설명합니다. 사용자는 추가 질문을 통해 더 상세한 정보를 얻을 수 있습니다.</li>
+            </ol>
+            <p>이 과정을 통해 사용자는 AI Agent가 마치 숙련된 투자 분석가처럼 사용자와 상호작용하며 문제를 해결해 나가는 과정을 생생하게 체험할 수 있습니다.</p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

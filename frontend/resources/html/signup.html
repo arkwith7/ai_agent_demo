@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - AI Agent 주식 분석 비서</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* login.html과 동일한 CSS 사용 (실제 프로젝트에서는 외부 CSS 파일로 분리) */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --hover-darken-primary: #0056b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header.static-header {
+            background: var(--card-bg);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        header.static-header .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header.static-header .logo {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+         header.static-header .logo .fa-brain {
+             margin-right: 8px;
+        }
+        nav ul {
+            padding: 0;
+            list-style: none;
+            text-align: center;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-left: 25px;
+        }
+        nav ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+            transition: color 0.2s ease;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .auth-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .auth-form-wrapper {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-form-wrapper h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .auth-form-wrapper h1 .fa-user-plus { /* 아이콘 변경 */
+            margin-right: 10px;
+        }
+
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="email"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .submit-button:hover {
+            background-color: var(--hover-darken-primary);
+        }
+
+        .form-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .terms {
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            text-align: center;
+            margin-top: 20px;
+        }
+        .terms a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+
+        footer.static-footer {
+            text-align: center;
+            padding: 25px;
+            background: #333;
+            color: #bbb;
+            border-top: 1px solid #444;
+            margin-top: auto;
+        }
+        footer.static-footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header class="static-header">
+        <div class="container">
+            <a href="index.html" class="logo"><i class="fas fa-brain"></i> AI Stocks</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">홈</a></li>
+                    <li><a href="ai_agent_introduction.html">AI Agent 소개</a></li>
+                    <li><a href="key_features_experience.html">핵심 기능</a></li>
+                    <li><a href="warren_buffett_principles.html">투자 원칙</a></li>
+                    <li><a href="start_demo.html">데모 체험</a></li>
+                    <li><a href="login.html">로그인</a></li>
+                    <li><a href="signup.html" class="active">회원가입</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-form-wrapper">
+            <h1><i class="fas fa-user-plus"></i> 회원가입</h1>
+            <form id="signupForm" method="post" action="#"> <div class="form-group">
+                    <label for="fullName">이름 (선택)</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="홍길동">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">이메일 주소</label>
+                    <input type="email" id="signupEmail" name="email" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">비밀번호</label>
+                    <input type="password" id="signupPassword" name="password" placeholder="최소 8자 이상" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">비밀번호 확인</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="비밀번호 다시 입력" required>
+                </div>
+                <button type="submit" class="submit-button">가입하기</button>
+            </form>
+            <div class="terms">
+                가입 시 <a href="#">서비스 이용약관</a> 및 <a href="#">개인정보 처리방침</a>에 동의하는 것으로 간주합니다.
+            </div>
+            <div class="form-link">
+                <p>이미 계정이 있으신가요? <a href="login.html">로그인</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="static-footer">
+        <p>&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // 데모용 회원가입 처리
+        document.getElementById('signupForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // 실제 폼 제출 방지
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!email || !password || !confirmPassword) {
+                alert('필수 정보를 모두 입력해주세요.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            if (password.length < 8) {
+                alert('비밀번호는 최소 8자 이상이어야 합니다.');
+                return;
+            }
+
+            alert('데모 회원가입 성공! 로그인 페이지로 이동합니다.');
+            window.location.href = 'login.html'; // 로그인 페이지로 리디렉션
+        });
+    </script>
+</body>
+</html>

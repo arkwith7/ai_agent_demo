@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 주식 분석 데모 (동적)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 기본 스타일 */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --text-light: #f8f9fa;
+            --user-msg-bg: #007bff;
+            --agent-msg-bg: #e9ecef;
+            --action-log-bg: #f9f9f9;
+            --card-bg: #ffffff;
+            --hover-darken-primary: #0056b3;
+            --hover-lighten-secondary: #5a6268;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 헤더 스타일 */
+        header.demo-header {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 0 25px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 65px;
+            box-sizing: border-box;
+            flex-shrink: 0; /* 헤더 크기 고정 */
+        }
+        header.demo-header h1 {
+            margin: 0;
+            font-size: 1.6em;
+            color: var(--primary-color);
+        }
+        header.demo-header h1 .fa-brain {
+            margin-right: 10px;
+        }
+        header.demo-header a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.95em;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+        header.demo-header a:hover {
+            background-color: var(--agent-msg-bg);
+            text-decoration: none;
+        }
+
+        /* 메인 컨테이너 */
+        .demo-main-container {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* 좌측 패널 */
+        .left-panel {
+            width: 400px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 우측 패널 */
+        .right-panel {
+            flex-grow: 1;
+            background-color: var(--light-bg);
+            padding: 25px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .right-panel > h2 { /* 자식 h2에만 적용 */
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            font-size: 1.8em;
+        }
+
+        /* 좌측 패널 내부 섹션 */
+        .chat-history-pane, .agent-action-log-pane {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background-color: #fff; /* 채팅창 배경 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .chat-history-pane {
+            flex-grow: 1;
+            min-height: 250px;
+        }
+        .agent-action-log-pane {
+            height: 180px;
+            font-size: 0.88em;
+            color: var(--secondary-color);
+            background-color: var(--action-log-bg);
+        }
+        .panel-title { /* 공통 패널 제목 스타일 */
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        .panel-title .fa-comments, .panel-title .fa-cogs {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        /* 채팅 메시지 */
+        .message {
+            margin-bottom: 12px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 90%;
+            word-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInMessage 0.3s ease forwards;
+        }
+        @keyframes fadeInMessage {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background-color: var(--user-msg-bg);
+            color: var(--text-light);
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 6px;
+        }
+        .agent-message {
+            background-color: var(--agent-msg-bg);
+            color: var(--text-color);
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 6px;
+        }
+        .message .sender {
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .message .sender .fa-user, .message .sender .fa-robot {
+            margin-right: 6px;
+            font-size: 0.9em;
+        }
+        .message .text {
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* Agent 활동 로그 */
+        .log-item {
+            padding: 6px 2px;
+            border-bottom: 1px dotted #e0e0e0;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: fadeInLog 0.4s ease forwards;
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-item .icon {
+            margin-right: 8px;
+            color: var(--secondary-color);
+            width: 20px; /* 아이콘 너비 고정 */
+            text-align: center;
+        }
+        .log-item .fa-spinner { color: var(--primary-color); }
+
+
+        /* 질문 입력창 */
+        .chat-input-form {
+            margin-top: auto; /* 항상 하단에 위치 */
+            padding-top: 15px; /* 위 요소와 간격 */
+            border-top: 1px solid var(--border-color);
+        }
+        .chat-input-form .panel-title { margin-bottom: 10px; }
+        .chat-input-form textarea {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* 둥근 모서리 줄임 */
+            resize: none;
+            min-height: 45px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+            font-size: 1em;
+            line-height: 1.4;
+            transition: border-color 0.2s ease;
+        }
+        .chat-input-form textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .chat-input-form .button-group {
+            display: flex;
+            gap: 8px; /* 버튼 사이 간격 */
+        }
+        .chat-input-form button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .chat-input-form button:active {
+            transform: scale(0.98);
+        }
+        .chat-input-form button.send-button {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+        }
+        .chat-input-form button.send-button:hover {
+            background-color: var(--hover-darken-primary);
+        }
+        .chat-input-form button.send-button .fa-paper-plane {
+            margin-right: 6px;
+        }
+        .chat-input-form .suggested-prompt-button {
+            background-color: var(--agent-msg-bg);
+            color: var(--text-color);
+            font-size: 0.85em;
+            padding: 10px 12px;
+        }
+        .chat-input-form .suggested-prompt-button:hover {
+            background-color: #d3d9df;
+        }
+
+        /* 우측 패널 공통 */
+        .results-placeholder { /* 초기 환영 메시지, 로딩 등 */
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--secondary-color);
+            font-size: 1.15em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .results-placeholder .fa-comments, .results-placeholder .fa-hourglass-half {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        /* 결과 카드 */
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 반응형 그리드 */
+            gap: 20px;
+        }
+        .company-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .company-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        .company-card h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            font-size: 1.3em;
+        }
+        .company-card p {
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .company-card .criteria-match {
+            font-size: 0.85em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        .company-card .details-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        .company-card .details-button:hover { background-color: #1e7e34; }
+        .company-card .details-button .fa-eye { margin-right: 6px; }
+
+        /* 상세 정보 뷰 */
+        .company-details-view {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+        .company-details-view h2 { /* 상세 보기의 h2는 right-panel > h2와 다름 */
+             margin-top: 0;
+             margin-bottom: 20px;
+             color: var(--primary-color);
+             font-size: 1.6em;
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 10px;
+        }
+        .company-details-view .data-section { margin-bottom: 25px; }
+        .company-details-view .data-section h4 {
+            margin-bottom: 10px;
+            font-size: 1.15em;
+            color: var(--text-color);
+        }
+        .company-details-view .chart-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: var(--agent-msg-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        .company-details-view table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        .company-details-view th, .company-details-view td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+        }
+        .company-details-view th { background-color: var(--light-bg); font-weight: 600; }
+        .company-details-view .agent-comment {
+            background-color: #e7f3fe; /* 파란색 계열 강조 */
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            font-size: 1em;
+            line-height: 1.6;
+            border-radius: 0 6px 6px 0;
+        }
+        .back-to-results-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+        }
+        .back-to-results-button:hover { background-color: var(--hover-lighten-secondary); }
+        .back-to-results-button .fa-arrow-left { margin-right: 6px; }
+
+
+        /* 접근성을 위한 숨김 클래스 */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="demo-header">
+        <h1><i class="fas fa-brain"></i> AI Agent 주식 분석</h1>
+        <a href="index.html"><i class="fas fa-home"></i> 소개 페이지로</a>
+    </header>
+
+    <main class="demo-main-container">
+        <aside class="left-panel">
+            <h2 class="panel-title"><i class="fas fa-comments"></i> 대화창</h2>
+            <section class="chat-history-pane" id="chatHistory" aria-labelledby="chat-history-label">
+                <h3 id="chat-history-label" class="visually-hidden">대화 기록</h3>
+                </section>
+
+            <h2 class="panel-title"><i class="fas fa-cogs"></i> Agent 활동 로그</h2>
+            <section class="agent-action-log-pane" id="agentLog" aria-labelledby="agent-log-label">
+                <h3 id="agent-log-label" class="visually-hidden">Agent 활동 로그</h3>
+                </section>
+
+            <form class="chat-input-form" id="chatForm">
+                <h3 class="panel-title"><i class="fas fa-keyboard"></i> 질문 입력</h3>
+                <textarea id="userInput" placeholder="AI Agent에게 요청하세요..." aria-label="질문 입력창"></textarea>
+                <div class="button-group">
+                    <button type="submit" class="send-button"><i class="fas fa-paper-plane"></i> 전송</button>
+                    <button type="button" class="suggested-prompt-button" data-prompt="워런 버핏 기준으로 회사 찾아줘">워런 버핏 기준</button>
+                    <button type="button" class="suggested-prompt-button" data-prompt="성장주 찾아줘">성장주 찾기</button>
+                </div>
+            </form>
+        </aside>
+
+        <section class="right-panel" id="rightPanel" aria-labelledby="results-panel-label">
+            </section>
+    </main>
+
+<script>
+    const chatHistory = document.getElementById('chatHistory');
+    const agentLog = document.getElementById('agentLog');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const rightPanel = document.getElementById('rightPanel');
+
+    // 초기 화면 설정
+    function displayWelcomeMessage() {
+        rightPanel.innerHTML = `
+            <div class="results-placeholder">
+                <i class="fas fa-comments"></i>
+                <h2 id="results-panel-label">AI Agent와 대화를 시작하세요!</h2>
+                <p>좌측 하단에 궁금한 점이나 분석하고 싶은 내용을 입력하시면, AI Agent가 분석 결과를 이곳에 표시해 드립니다.</p>
+                <p>예시: "워런 버핏 기준으로 회사 찾아줘", "A 기업 재무상태 알려줘"</p>
+            </div>`;
+    }
+
+    function displayLoadingMessage() {
+        rightPanel.innerHTML = `
+            <div class="results-placeholder">
+                <i class="fas fa-hourglass-half fa-spin"></i>
+                <h2 id="results-panel-label">데이터 분석 중...</h2>
+                <p>Agent가 요청을 처리하고 있습니다. 잠시만 기다려주세요.</p>
+            </div>`;
+    }
+
+    function addMessageToChat(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'agent-message');
+        
+        const senderIconClass = sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
+        const senderName = sender === 'user' ? '사용자' : 'AI Agent';
+
+        messageDiv.innerHTML = `
+            <span class="sender"><i class="${senderIconClass}"></i> ${senderName}</span>
+            <span class="text">${text}</span>`;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // 자동 스크롤
+    }
+
+    function addLogItem(text, iconClass = 'fas fa-info-circle', isSpinning = false) {
+        const logItemDiv = document.createElement('div');
+        logItemDiv.classList.add('log-item');
+        const spinnerClass = isSpinning ? 'fa-spin' : '';
+        logItemDiv.innerHTML = `<span class="icon"><i class="${iconClass} ${spinnerClass}"></i></span> ${text}`;
+        agentLog.appendChild(logItemDiv);
+        agentLog.scrollTop = agentLog.scrollHeight; // 자동 스크롤
+        return logItemDiv; // 스피너 제거 등을 위해 반환
+    }
+
+    // 시뮬레이션된 Agent 응답 로직
+    async function simulateAgentResponse(userQuery) {
+        addMessageToChat("요청을 접수했습니다. 분석을 시작하겠습니다.", 'agent');
+        displayLoadingMessage();
+
+        let thinkingLog = addLogItem("사용자 요청 분석 중...", 'fas fa-brain', true);
+        await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5초 대기
+        thinkingLog.innerHTML = `<span class="icon"><i class="fas fa-brain"></i></span> 사용자 요청 분석 완료: "${userQuery}"`;
+
+        if (userQuery.includes("워런 버핏")) {
+            thinkingLog = addLogItem("플랜 수립: 워런 버핏 6단계 필터링", 'fas fa-list-check', true);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            thinkingLog.innerHTML = `<span class="icon"><i class="fas fa-list-check"></i></span> 플랜 수립 완료`;
+
+            const steps = [
+                { text: "1단계: [KRX 데이터 조회] 시가총액 상위 30% 필터링...", icon: 'fas fa-database', duration: 1200 },
+                { text: "2단계: [재무정보 분석] ROE 15% 이상 필터링...", icon: 'fas fa-chart-pie', duration: 1500 },
+                { text: "3단계: [현금흐름 분석] 순이익률 및 FCF 확인...", icon: 'fas fa-dollar-sign', duration: 1300 },
+                { text: "4단계: [시장가치 분석] 시총 증가율 vs 자본 증가율 비교...", icon: 'fas fa-chart-line', duration: 1000 },
+                { text: "5단계: [미래가치 예측] 5년 FCF 예측 및 비교...", icon: 'fas fa-project-diagram', duration: 1800 },
+                { text: "6단계: [종합평가] 성장성 및 배당가능성 검토...", icon: 'fas fa-clipboard-check', duration: 900 }
+            ];
+
+            for (const step of steps) {
+                thinkingLog = addLogItem(step.text, step.icon, true);
+                await new Promise(resolve => setTimeout(resolve, step.duration));
+                thinkingLog.innerHTML = `<span class="icon"><i class="${step.icon}"></i></span> ${step.text.replace('...', ' 완료.')}`;
+            }
+            addLogItem("모든 분석 단계 완료. 결과 생성 중...", 'fas fa-magic');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            addMessageToChat("분석이 완료되었습니다. 워런 버핏 기준에 부합하는 추천 종목은 다음과 같습니다. 우측 화면에서 확인해주세요.", 'agent');
+            displayResultsCards_Buffett();
+
+        } else if (userQuery.includes("성장주")) {
+            thinkingLog = addLogItem("플랜 수립: 성장주 필터링 (매출 성장률, 이익 성장률 등)", 'fas fa-rocket', true);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            thinkingLog.innerHTML = `<span class="icon"><i class="fas fa-rocket"></i></span> 성장주 필터링 플랜 수립 완료`;
+             const steps = [
+                { text: "1단계: [산업동향 분석] 유망 성장 산업군 식별...", icon: 'fas fa-industry', duration: 1200 },
+                { text: "2단계: [재무 데이터 스크리닝] 최근 3년 연평균 매출 성장률 20% 이상...", icon: 'fas fa-file-invoice-dollar', duration: 1500 },
+                { text: "3단계: [수익성 점검] 영업이익률 및 순이익률 증가 추세 확인...", icon: 'fas fa-coins', duration: 1300 },
+                { text: "4단계: [기술력/시장 점유율 평가]...", icon: 'fas fa-microchip', duration: 1000 }
+            ];
+            for (const step of steps) {
+                thinkingLog = addLogItem(step.text, step.icon, true);
+                await new Promise(resolve => setTimeout(resolve, step.duration));
+                thinkingLog.innerHTML = `<span class="icon"><i class="${step.icon}"></i></span> ${step.text.replace('...', ' 완료.')}`;
+            }
+            addLogItem("성장주 분석 완료. 결과 생성 중...", 'fas fa-lightbulb');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            addMessageToChat("성장 가능성이 높은 기업들을 분석했습니다. 우측 화면에서 추천 종목을 확인하세요.", 'agent');
+            displayResultsCards_Growth();
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            addMessageToChat(`"${userQuery}"에 대한 분석은 현재 데모에서 지원하지 않거나, 좀 더 구체적인 질문이 필요합니다. "워런 버핏" 또는 "성장주"를 포함하여 질문해보세요.`, 'agent');
+            displayWelcomeMessage(); // 혹은 에러 메시지 화면
+        }
+    }
+
+    // 워런 버핏 기준 결과 카드 표시 (예시 데이터)
+    function displayResultsCards_Buffett() {
+        rightPanel.innerHTML = `
+            <h2 id="results-panel-label">분석 결과: 워런 버핏 기준 추천 종목</h2>
+            <div class="results-container" id="resultsContainer">
+                <article class="company-card" data-company-id="buffett_a">
+                    <h3><i class="fas fa-building-columns"></i> (주) 가나다전자</h3>
+                    <p><strong>주요 지표:</strong> ROE 22%, PBR 1.2, 시총 5조</p>
+                    <p class="criteria-match"><i class="fas fa-check-circle" style="color: green;"></i> 워런 버핏 기준: 5/6 충족</p>
+                    <button class="details-button" data-company-id="buffett_a"><i class="fas fa-eye"></i> 상세 보기</button>
+                </article>
+                <article class="company-card" data-company-id="buffett_b">
+                    <h3><i class="fas fa-microchip"></i> (주) 마이크로솔루션</h3>
+                    <p><strong>주요 지표:</strong> ROE 18%, PBR 0.9, 시총 8조</p>
+                    <p class="criteria-match"><i class="fas fa-check-circle" style="color: green;"></i> 워런 버핏 기준: 6/6 충족</p>
+                    <button class="details-button" data-company-id="buffett_b"><i class="fas fa-eye"></i> 상세 보기</button>
+                </article>
+                 <article class="company-card" data-company-id="buffett_c">
+                    <h3><i class="fas fa-industry"></i> (주) 대한민국철강</h3>
+                    <p><strong>주요 지표:</strong> ROE 16%, PBR 1.0, 시총 3조</p>
+                    <p class="criteria-match"><i class="fas fa-times-circle" style="color: orange;"></i> 워런 버핏 기준: 4/6 충족</p>
+                    <button class="details-button" data-company-id="buffett_c"><i class="fas fa-eye"></i> 상세 보기</button>
+                </article>
+            </div>`;
+        addCardClickListeners();
+    }
+    
+    // 성장주 결과 카드 표시 (예시 데이터)
+    function displayResultsCards_Growth() {
+        rightPanel.innerHTML = `
+            <h2 id="results-panel-label">분석 결과: 추천 성장주</h2>
+            <div class="results-container" id="resultsContainer">
+                <article class="company-card" data-company-id="growth_x">
+                    <h3><i class="fas fa-rocket"></i> (주) 넥스트테크</h3>
+                    <p><strong>주요 지표:</strong> 연매출성장률 35%, 영업이익률 15%</p>
+                    <p class="criteria-match"><i class="fas fa-chart-line" style="color: green;"></i> 높은 성장 잠재력 보유</p>
+                    <button class="details-button" data-company-id="growth_x"><i class="fas fa-eye"></i> 상세 보기</button>
+                </article>
+                <article class="company-card" data-company-id="growth_y">
+                    <h3><i class="fas fa-biohazard"></i> (주) 바이오퓨처</h3>
+                    <p><strong>주요 지표:</strong> 신약 파이프라인 다수, 기술수출 기대</p>
+                    <p class="criteria-match"><i class="fas fa-flask" style="color: green;"></i> 혁신 기술 기반 성장 기대</p>
+                    <button class="details-button" data-company-id="growth_y"><i class="fas fa-eye"></i> 상세 보기</button>
+                </article>
+            </div>`;
+        addCardClickListeners();
+    }
+
+
+    // 상세 정보 보기 (예시 데이터)
+    function displayCompanyDetails(companyId) {
+        // 실제로는 companyId에 따라 다른 데이터를 로드해야 함
+        let companyName, roe, pbr, marketCap, fcfData, agentCommentText;
+        let isBuffett = companyId.startsWith("buffett");
+
+        if (companyId === "buffett_b") { // (주) 마이크로솔루션
+            companyName = "(주) 마이크로솔루션";
+            roe = "18%"; pbr = "0.9"; marketCap = "8조";
+            fcfData = `<table><thead><tr><th>연도</th><th>예상 FCF (억원)</th></tr></thead><tbody>
+                        <tr><td>2025</td><td>800</td></tr><tr><td>2026</td><td>850</td></tr>
+                        <tr><td>2027</td><td>920</td></tr><tr><td>2028</td><td>1000</td></tr>
+                        <tr><td>2029</td><td>1100</td></tr><tr><td><strong>합계</strong></td><td><strong>4670</strong></td></tr>
+                       </tbody></table>`;
+            agentCommentText = `(주) 마이크로솔루션의 향후 5년 예상 FCF 총합은 4,670억원으로 현재 시가총액(8조원) 대비 양호한 수준입니다. 워런 버핏의 모든 기준을 충족하며, 특히 지속적인 ROE 성장과 안정적인 현금 흐름이 긍정적입니다.`;
+        } else if (companyId === "buffett_a") {
+             companyName = "(주) 가나다전자";
+            roe = "22%"; pbr = "1.2"; marketCap = "5조";
+            fcfData = `<p>FCF 데이터 준비 중입니다.</p>`;
+            agentCommentText = `(주) 가나다전자는 높은 ROE와 시장 신뢰도를 바탕으로 워런 버핏 기준 5가지를 충족합니다. 다만, 잉여현금흐름의 변동성이 다소 있어 장기적 안정성은 추가 검토가 필요합니다.`;
+        } else if (companyId === "growth_x") {
+            companyName = "(주) 넥스트테크";
+            roe = "N/A (성장 초기)"; pbr = "N/A"; marketCap = "1.5조";
+            fcfData = `<div class="chart-placeholder">성장 초기 기업 FCF 예측 모델 적용 예정</div>`;
+            agentCommentText = `(주) 넥스트테크는 최근 3년간 연평균 매출 성장률 35%를 기록하며 빠르게 성장하고 있는 기술 기업입니다. 현재 수익성보다는 시장 점유율 확대에 집중하고 있으며, 향후 2-3년 내 흑자 전환이 기대됩니다.`;
+        }
+         else { // 기본 또는 기타 회사
+            companyName = `(${companyId}) 상세 정보`;
+            roe = "15%"; pbr = "1.0"; marketCap = "N/A";
+            fcfData = `<p>상세 FCF 데이터는 준비 중입니다.</p>`;
+            agentCommentText = `해당 기업은 안정적인 재무 구조를 가지고 있습니다. 추가적인 분석이 필요합니다.`;
+        }
+
+        rightPanel.innerHTML = `
+            <button class="back-to-results-button" id="backButton"><i class="fas fa-arrow-left"></i> 결과 목록으로</button>
+            <div class="company-details-view">
+                <h2><i class="fas fa-clipboard-list"></i> ${companyName} 상세 분석</h2>
+                <section class="data-section">
+                    <h4><i class="fas fa-info-circle"></i> 기본 정보</h4>
+                    <p><strong>회사명:</strong> ${companyName}</p>
+                    <p><strong>ROE:</strong> ${roe} / <strong>PBR:</strong> ${pbr} / <strong>시가총액:</strong> ${marketCap}</p>
+                </section>
+                <section class="data-section">
+                    <h4><i class="fas fa-hand-holding-usd"></i> 5년 예상 FCF (Free Cash Flow)</h4>
+                    <div class="chart-placeholder">미래 FCF 예측 차트 (시뮬레이션)</div>
+                    ${fcfData}
+                </section>
+                <section class="data-section">
+                    <h4><i class="fas fa-comment-dots"></i> Agent 분석 코멘트</h4>
+                    <p class="agent-comment">${agentCommentText}</p>
+                </section>
+            </div>`;
+        
+        document.getElementById('backButton').addEventListener('click', () => {
+            // 어떤 결과 목록으로 돌아갈지 결정 (예: isBuffett 플래그 사용)
+            if (isBuffett) displayResultsCards_Buffett();
+            else displayResultsCards_Growth(); // 혹은 다른 기본 목록
+        });
+    }
+
+    // 이벤트 리스너
+    chatForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const query = userInput.value.trim();
+        if (query) {
+            addMessageToChat(query, 'user');
+            simulateAgentResponse(query);
+            userInput.value = '';
+        }
+    });
+    
+    // 추천 질문 버튼 리스너
+    document.querySelectorAll('.suggested-prompt-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const promptText = this.dataset.prompt;
+            userInput.value = promptText;
+            // chatForm.dispatchEvent(new Event('submit')); // 폼 제출 이벤트를 직접 발생
+            addMessageToChat(promptText, 'user'); // 사용자 메시지 먼저 표시
+            simulateAgentResponse(promptText); // Agent 응답 시뮬레이션
+            userInput.value = ''; // 입력창 비우기
+        });
+    });
+
+    function addCardClickListeners() {
+        document.querySelectorAll('.details-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const companyId = this.dataset.companyId;
+                displayCompanyDetails(companyId);
+            });
+        });
+    }
+
+    // 초기화
+    addMessageToChat("안녕하세요! AI 주식 분석 비서입니다. 무엇을 도와드릴까요? 예를 들어 '워런 버핏 기준으로 회사 찾아줘' 와 같이 질문해보세요.", 'agent');
+    addLogItem("AI Agent 준비 완료.", 'fas fa-check-circle');
+    displayWelcomeMessage();
+
+</script>
+</body>
+</html>

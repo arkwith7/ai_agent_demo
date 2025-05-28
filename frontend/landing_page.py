@@ -1,6 +1,8 @@
 import streamlit as st
 import base64
 import os
+from datetime import datetime
+import pytz
 
 def get_base64_of_bin_file(bin_file_path):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,28 +15,15 @@ def get_base64_of_bin_file(bin_file_path):
         return ""
 
 def landing_page():
-    # 1) 이미지 로드
-    base64_image = get_base64_of_bin_file("resources/images/imgg-gi3-25p6uljm.png")
-
-    # 2) CSS 스타일
+    # CSS 스타일 로드
+    with open(os.path.join(os.path.dirname(__file__), 'resources/css/styles.css'), 'r') as f:
+        css_content = f.read()
+    
     st.markdown(f"""
     <style>
-    /* 전체 페이지 리셋 */
-    * {{
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-    }}
+    {css_content}
     
-    html, body {{
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #e5e5e5 !important;
-        font-family: Arial, sans-serif !important;
-        overflow-x: hidden !important;
-    }}
-
-    /* Streamlit 컨테이너 리셋 + 배경색 통일 */
+    /* Streamlit 컨테이너 리셋 */
     .stApp,
     [data-testid="stAppViewContainer"],
     .main,
@@ -44,20 +33,8 @@ def landing_page():
         padding-top: 0 !important;
         max-width: none !important;
         width: 100% !important;
-        background: #e5e5e5 !important;
     }}
     
-    /* 추가 Streamlit 컨테이너들도 배경색 통일 */
-    section[data-testid="stSidebar"],
-    .css-1d391kg,
-    .css-18e3th9,
-    .css-1y4p8pa,
-    .reportview-container,
-    .main .block-container > div,
-    .element-container {{
-        background: #e5e5e5 !important;
-    }}
-
     /* 헤더 제거 */
     header[data-testid="stHeader"],
     .stDeployButton {{
@@ -65,237 +42,109 @@ def landing_page():
         height: 0 !important;
         min-height: 0 !important;
     }}
-
-    /* 첫 번째 요소 여백 제거 */
-    .main > div:first-child,
-    .element-container:first-child,
-    .stMarkdown:first-child {{
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }}
-
-    /* 네비게이션 래퍼 추가 */
-    .navbar-wrapper {{
-        display: flex;
-        justify-content: center;
-        padding: 0;
-        margin: 0;
-        background: #e5e5e5;
-    }}
-
-    /* 네비게이션 바 */
-    .navbar {{
-        width: 100%; 
-        max-width: 1400px; 
-        padding: 16px 24px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        background: #e5e5e5;
-        margin-top: 0 !important;
-        /* 정렬 보정 */
-        box-sizing: border-box;
-        position: relative;
-    }}
-    
-    .navbar .logo {{
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-    }}
-    
-    .navbar .nav-links {{
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        gap: 32px;
-    }}
-    
-    .navbar .logo a {{
-        font-family: Georgia, serif; 
-        font-size: 1.8rem; 
-        font-weight: 700;
-        text-decoration: none; 
-        color: #222;
-    }}
-    
-    .navbar .logo a:hover {{ 
-        color: #ff5a00; 
-    }}
-    
-    .navbar .nav-links a {{
-        font-family: Arial, sans-serif; 
-        font-size: 1rem;
-        text-decoration: none; 
-        color: #222; 
-        transition: color 0.3s;
-        white-space: nowrap;
-        cursor: pointer;
-        /* margin-left 제거하고 gap으로 간격 조정 */
-    }}
-    
-    .navbar .nav-links a:hover {{ 
-        color: #ff5a00; 
-    }}
-
-    /* Hero 래퍼 */
-    .hero-wrapper {{
-        display: flex; 
-        justify-content: center; 
-        padding: 0; 
-        margin: 0;
-    }}
-    
-    /* Hero 영역 */
-    .hero {{
-        width: 100%; 
-        max-width: 1400px; 
-        height: 75vh; 
-        min-height: 400px;
-        margin: 0; 
-        border-radius: 12px; 
-        overflow: hidden;
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        box-shadow: 0 4px 32px rgba(0,0,0,0.15);
-        position: relative;
-        
-        background-image: 
-            linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-            url("data:image/png;base64,{base64_image}");
-        background-size: cover;
-        background-position: center center;
-        background-repeat: no-repeat;
-    }}
-      
-    .hero-content {{
-        color: #fff; 
-        text-align: center; 
-        font-size: 2.8rem;
-        font-weight: 500; 
-        line-height: 1.3;
-        z-index: 2;
-    }}
-    
-    /* CTA 버튼 스타일 */
-    .cta-button {{
-        display: inline-block;
-        margin-top: 32px;
-        padding: 16px 32px;
-        background: #ff5a00;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
-    }}
-    
-    .cta-button:hover {{
-        background: #e54a00;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(255, 90, 0, 0.3);
-    }}
-
-    /* 반응형 디자인 */
-    @media (max-width: 768px) {{
-        .navbar-wrapper {{
-            background: #e5e5e5;
-        }}
-        .navbar {{ 
-            flex-direction: column; 
-            align-items: stretch;
-            padding: 12px 16px;
-            text-align: center;
-        }}
-        .navbar .logo {{
-            justify-content: center;
-            margin-bottom: 12px;
-        }}
-        .navbar .nav-links {{ 
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }}
-        .navbar .nav-links a {{ 
-            font-size: 0.9rem; 
-        }}
-        .hero {{ 
-            height: 50vh; 
-            min-height: 300px;
-        }}
-        .hero-content {{ 
-            font-size: 1.5rem; 
-        }}
-        .cta-button {{
-            font-size: 1rem;
-            padding: 12px 24px;
-        }}
-    }}
     </style>
     """, unsafe_allow_html=True)
 
-    # 3) 네비게이션 클릭 이벤트 처리를 위한 JavaScript
+    # 헤더 섹션
+    st.markdown("""
+    <header class="static-header">
+        <div class="container">
+            <a href="#" class="logo"><i class="fas fa-brain"></i> AI Stocks</a>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">홈</a></li>
+                    <li><a href="#ai-agent">AI Agent 소개</a></li>
+                    <li><a href="#features">핵심 기능</a></li>
+                    <li><a href="#principles">투자 원칙</a></li>
+                    <li><a href="#demo">데모 체험</a></li>
+                    <li><a href="#login">로그인</a></li>
+                    <li><a href="#signup">회원가입</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    """, unsafe_allow_html=True)
+
+    # Hero 섹션
+    st.markdown("""
+    <section class="hero">
+        <div class="hero-content">
+            <h1>AI Agent, <br>나만의 주식 분석 비서를 경험하세요.</h1>
+            <p>복잡한 설정과 버튼 클릭은 이제 그만! <br> AI Agent와 대화하며 원하는 종목을 찾고, 분석 과정을 직접 확인해보세요.</p>
+            <a href="#demo" class="cta-button">AI Agent 데모 체험하기 <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+    """, unsafe_allow_html=True)
+
+    # 메인 컨텐츠
+    st.markdown("""
+    <main class="content-container">
+        <section class="section">
+            <h2>AI Agent 주식 분석, 무엇이 다른가요?</h2>
+            <p>본 데모 서비스는 단순한 종목 추천을 넘어, AI Agent가 사용자의 요청을 어떻게 이해하고, 어떤 과정을 통해 정보를 분석하여 결과를 도출하는지 그 '경험'에 초점을 맞추고 있습니다. AI Agent의 능동적인 문제 해결 과정을 직접 체험하며 미래의 투자 방식을 엿볼 수 있습니다.</p>
+            <a href="#ai-agent" class="learn-more-link">AI Agent 더 알아보기 &raquo;</a>
+        </section>
+
+        <section class="section">
+            <h2>주요 체험 포인트</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3>자연어 기반 요청</h3>
+                    <p>"현금흐름 좋고 ROE 높은 IT 기업 찾아줘" 와 같이, 사람에게 말하듯 AI Agent에게 요청하고 결과를 받아보세요.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-microscope"></i></div>
+                    <h3>투명한 분석 과정</h3>
+                    <p>AI Agent가 어떤 데이터를 조회하고, 어떤 기준으로 종목을 필터링하는지 실시간으로 그 과정을 확인할 수 있습니다.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>대화형 인사이트</h3>
+                    <p>분석 결과에 대해 궁금한 점을 추가로 질문하고, AI Agent와 대화하며 더 깊이 있는 인사이트를 얻을 수 있습니다.</p>
+                </div>
+            </div>
+            <a href="#features" class="learn-more-link">핵심 기능 자세히 보기 &raquo;</a>
+        </section>
+    </main>
+    """, unsafe_allow_html=True)
+
+    # 푸터
+    kst = datetime.now(pytz.timezone('Asia/Seoul'))
+    formatted_time = kst.strftime('%Y-%m-%d %H:%M:%S')
+    
+    st.markdown(f"""
+    <footer class="static-footer">
+        <p>&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved. (KST: {formatted_time})</p>
+    </footer>
+    """, unsafe_allow_html=True)
+
+    # Font Awesome 추가
+    st.markdown("""
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    """, unsafe_allow_html=True)
+
+    # JavaScript for KST time update
     st.markdown("""
     <script>
-    function navigateToPage(pageName) {
-        // Streamlit의 session state를 업데이트하고 페이지를 리로드
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            data: {page: pageName}
-        }, '*');
+    function updateTimeKST() {
+        const now = new Date();
+        const kstOffset = 9 * 60; // KST is UTC+9
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const kstNow = new Date(utc + (kstOffset * 60000));
+        
+        const year = kstNow.getFullYear();
+        const month = String(kstNow.getMonth() + 1).padStart(2, '0');
+        const day = String(kstNow.getDate()).padStart(2, '0');
+        const hours = String(kstNow.getHours()).padStart(2, '0');
+        const minutes = String(kstNow.getMinutes()).padStart(2, '0');
+        const seconds = String(kstNow.getSeconds()).padStart(2, '0');
+        
+        document.querySelector('.static-footer p').innerHTML = 
+            `&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved. (KST: ${year}-${month}-${day} ${hours}:${minutes}:${seconds})`;
     }
+    setInterval(updateTimeKST, 1000);
     </script>
     """, unsafe_allow_html=True)
-
-    # 4) HTML 마크업
-    st.markdown("""
-    <div class="navbar-wrapper">
-      <nav class="navbar">
-        <div class="logo">
-          <a href="#" onclick="navigateToPage('홈')">Agentic AI 체험</a>
-        </div>
-        <div class="nav-links">
-          <a href="#" onclick="navigateToPage('투자 AI 체험')">AI 체험</a>
-          <a href="#" onclick="navigateToPage('분석 결과 리포트')">분석 리포트</a>
-          <a href="#" onclick="navigateToPage('모의 투자')">모의 투자</a>
-        </div>
-      </nav>
-    </div>
-    <div class="hero-wrapper">
-      <div class="hero">
-        <div class="hero-content">
-          <p><span>AI Agent</span>가 실시간으로 정보를 수집,<br>분석, 판단해주는 능력을 체험한다.</p>
-        </div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 5) Streamlit 버튼으로 페이지 전환 (JavaScript 대안)
-    st.markdown("---")
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        if st.button("🤖 투자 AI 체험", key="nav_chat", use_container_width=True):
-            st.session_state['page'] = '투자 AI 체험'
-            st.rerun()
-    
-    with col2:
-        if st.button("📊 분석 결과 리포트", key="nav_report", use_container_width=True):
-            st.session_state['page'] = '분석 결과 리포트'
-            st.rerun()
-    
-    with col3:
-        if st.button("💰 모의 투자", key="nav_simulation", use_container_width=True):
-            st.session_state['page'] = '모의 투자'
-            st.rerun()
-    
-    with col4:
-        if st.button("🏠 홈으로", key="nav_home", use_container_width=True):
-            st.session_state['page'] = '홈'
-            st.rerun()
 
 # main.py에서 호출하므로 여기서는 직접 실행하지 않음

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 주식 분석 비서 - 홈</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --hover-darken-primary: #0056b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header.static-header {
+            background: var(--card-bg);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        header.static-header .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header.static-header .logo {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        header.static-header .logo .fa-brain {
+             margin-right: 8px;
+        }
+        nav ul {
+            padding: 0;
+            list-style: none;
+            text-align: center;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-left: 25px; /* 첫 번째 li에도 margin-left 적용되도록 수정 가능 또는 :first-child 제외 */
+        }
+        nav ul li:first-child {
+            margin-left: 0;
+        }
+        nav ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0; /* 밑줄과 간격 맞추기 */
+            transition: color 0.2s ease;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 123, 255, 0.05), rgba(0, 123, 255, 0.05)), url('https://source.unsplash.com/random/1600x600/?stocks,technology') no-repeat center center/cover; /* 배경 이미지 예시 */
+            background-color: var(--primary-color); /* 이미지 로드 실패시 대비 */
+            color: var(--text-color); /* 어두운 배경에는 밝은 텍스트, 밝은 배경에는 어두운 텍스트 조정 필요 */
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .hero-content {
+            background-color: rgba(255, 255, 255, 0.85); /* 내용 가독성을 위한 반투명 배경 */
+            display: inline-block;
+            padding: 40px;
+            border-radius: 10px;
+            max-width: 700px;
+        }
+        .hero h1 {
+            margin-bottom: 20px;
+            font-size: 2.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .hero p {
+            font-size: 1.25em;
+            margin-bottom: 30px;
+            color: var(--secondary-color);
+        }
+        .cta-button {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 30px; /* 둥근 버튼 */
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .cta-button:hover {
+            background-color: var(--hover-darken-primary);
+            transform: translateY(-2px);
+        }
+        .cta-button .fa-arrow-right {
+            margin-left: 10px;
+        }
+
+        /* Main Content Sections */
+        .content-container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: transparent; /* body 배경색 사용 */
+        }
+        .section {
+            padding: 40px 0; /* 상하 패딩 늘림 */
+            margin-bottom: 30px; /* 섹션 간 간격 */
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .section h2 {
+            text-align: center;
+            margin-bottom: 40px; /* 제목과 내용 간 간격 */
+            font-size: 2.2em;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        .section p {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--secondary-color);
+            line-height: 1.7;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section .learn-more-link {
+            display: block; /* 버튼처럼 보이게 */
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 25px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .section .learn-more-link:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Feature Boxes for "주요 체험 포인트" */
+        .features-grid {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px; /* 박스 사이 간격 */
+            margin-top: 20px;
+        }
+        .feature-box {
+            background-color: var(--card-bg);
+            text-align: center;
+            padding: 30px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex-basis: calc(33.333% - 40px); /* 3열 기준, gap 고려 */
+            min-width: 280px; /* 최소 너비 */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+        }
+        .feature-box .feature-icon {
+            font-size: 3em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .feature-box h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+        .feature-box p {
+            font-size: 0.95em;
+            color: var(--secondary-color);
+            line-height: 1.6;
+            text-align: center; /* feature-box 내부 p 태그에만 적용 */
+        }
+
+        /* Footer */
+        footer.static-footer {
+            text-align: center;
+            padding: 25px;
+            background: #333;
+            color: #bbb;
+            border-top: 1px solid #444;
+            margin-top: auto; /* 내용 짧아도 하단 고정 */
+        }
+        footer.static-footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>AI Agent, <br>나만의 주식 분석 비서를 경험하세요.</h1>
+            <p>복잡한 설정과 버튼 클릭은 이제 그만! <br> AI Agent와 대화하며 원하는 종목을 찾고, 분석 과정을 직접 확인해보세요.</p>
+            <a href="start_demo_dynamic.html" class="cta-button">AI Agent 데모 체험하기 <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <main class="content-container">
+        <section class="section">
+            <h2>AI Agent 주식 분석, 무엇이 다른가요?</h2>
+            <p>본 데모 서비스는 단순한 종목 추천을 넘어, AI Agent가 사용자의 요청을 어떻게 이해하고, 어떤 과정을 통해 정보를 분석하여 결과를 도출하는지 그 '경험'에 초점을 맞추고 있습니다. AI Agent의 능동적인 문제 해결 과정을 직접 체험하며 미래의 투자 방식을 엿볼 수 있습니다.</p>
+            <a href="ai_agent_introduction.html" class="learn-more-link">AI Agent 더 알아보기 &raquo;</a>
+        </section>
+
+        <section class="section">
+            <h2>주요 체험 포인트</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3>자연어 기반 요청</h3>
+                    <p>"현금흐름 좋고 ROE 높은 IT 기업 찾아줘" 와 같이, 사람에게 말하듯 AI Agent에게 요청하고 결과를 받아보세요.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-microscope"></i></div>
+                    <h3>투명한 분석 과정</h3>
+                    <p>AI Agent가 어떤 데이터를 조회하고, 어떤 기준으로 종목을 필터링하는지 실시간으로 그 과정을 확인할 수 있습니다.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>대화형 인사이트</h3>
+                    <p>분석 결과에 대해 궁금한 점을 추가로 질문하고, AI Agent와 대화하며 더 깊이 있는 인사이트를 얻을 수 있습니다.</p>
+                </div>
+            </div>
+            <a href="key_features_experience.html" class="learn-more-link">핵심 기능 자세히 보기 &raquo;</a>
+        </section>
+    </main>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script>
+        // Load header and footer components
+        fetch('../components/header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-placeholder').innerHTML = data;
+            });
+
+        fetch('../components/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
+            });
+    </script>
+</body>
+</html>

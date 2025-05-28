@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - AI Agent 주식 분석 비서</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --hover-darken-primary: #0056b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header.static-header { /* 기존 데모 페이지 헤더와 구분하기 위해 클래스명 변경 */
+            background: var(--card-bg);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        header.static-header .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header.static-header .logo {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        header.static-header .logo .fa-brain {
+             margin-right: 8px;
+        }
+        nav ul {
+            padding: 0;
+            list-style: none;
+            text-align: center;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-left: 25px;
+        }
+        nav ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+            transition: color 0.2s ease;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .auth-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .auth-form-wrapper {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-form-wrapper h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .auth-form-wrapper h1 .fa-right-to-bracket {
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="text"] {
+            width: calc(100% - 24px); /* padding 고려 */
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="email"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .submit-button:hover {
+            background-color: var(--hover-darken-primary);
+        }
+
+        .form-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-link a:hover {
+            text-decoration: underline;
+        }
+
+        .social-login {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .social-login p {
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            font-size: 0.9em;
+        }
+        .social-login .social-button {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            margin: 0 5px;
+            min-width: 120px; /* 버튼 최소 너비 */
+            transition: opacity 0.2s ease;
+        }
+        .social-login .social-button:hover {
+            opacity: 0.85;
+        }
+        .social-button.google { background-color: #DB4437; }
+        .social-button.kakao { background-color: #FEE500; color: #3C1E1E;}
+        .social-button .fab { margin-right: 8px; }
+
+
+        footer.static-footer { /* 기존 데모 페이지 푸터와 구분 */
+            text-align: center;
+            padding: 25px;
+            background: #333; /* 어두운 배경 */
+            color: #bbb; /* 밝은 텍스트 */
+            border-top: 1px solid #444;
+            margin-top: auto; /* 페이지 내용 짧아도 하단 고정 */
+        }
+        footer.static-footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header class="static-header">
+        <div class="container">
+            <a href="index.html" class="logo"><i class="fas fa-brain"></i> AI Stocks</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">홈</a></li>
+                    <li><a href="ai_agent_introduction.html">AI Agent 소개</a></li>
+                    <li><a href="key_features_experience.html">핵심 기능</a></li>
+                    <li><a href="warren_buffett_principles.html">투자 원칙</a></li>
+                    <li><a href="start_demo.html">데모 체험</a></li>
+                    <li><a href="login.html" class="active">로그인</a></li>
+                    <li><a href="signup.html">회원가입</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-form-wrapper">
+            <h1><i class="fas fa-right-to-bracket"></i> 로그인</h1>
+            <form id="loginForm" method="post" action="#"> <div class="form-group">
+                    <label for="email">이메일 주소</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" placeholder="비밀번호" required>
+                </div>
+                <button type="submit" class="submit-button">로그인</button>
+            </form>
+            <div class="form-link">
+                <p>계정이 없으신가요? <a href="signup.html">회원가입</a></p>
+                <p><a href="#">비밀번호를 잊으셨나요?</a></p>
+            </div>
+            <div class="social-login">
+                <p>- 또는 소셜 계정으로 로그인 -</p>
+                <a href="#" class="social-button google"><i class="fab fa-google"></i> Google</a>
+                <a href="#" class="social-button kakao"><i class="fas fa-comment"></i> Kakao</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="static-footer">
+        <p>&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // 데모용 로그인 처리
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // 실제 폼 제출 방지
+            // 간단한 유효성 검사 (실제로는 더 정교하게)
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (email && password) {
+                alert('데모 로그인 성공! 데모 페이지로 이동합니다.');
+                window.location.href = 'start_demo.html'; // 데모 페이지로 리디렉션
+            } else {
+                alert('이메일과 비밀번호를 모두 입력해주세요.');
+            }
+        });
+    </script>
+</body>
+</html>

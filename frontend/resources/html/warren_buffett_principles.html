@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워런 버핏 투자 원칙 - AI Agent 주식 분석 비서</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        header { background: #333; color: #fff; padding: 1rem 0; text-align: center; }
+        nav ul { padding: 0; list-style: none; text-align: center; background: #444; }
+        nav ul li { display: inline; margin-right: 20px; }
+        nav ul li a { color: #fff; text-decoration: none; padding: 10px 15px; display: inline-block; }
+        nav ul li a:hover { background: #555; }
+        .container { width: 80%; margin: auto; overflow: hidden; padding: 20px; background-color: #fff; }
+        .page-title { text-align: center; margin-bottom: 30px; padding-bottom:10px; border-bottom: 2px solid #333;}
+        .content-section { margin-bottom: 20px; }
+        .content-section h2 { color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .content-section h3 { color: #333; margin-top: 20px; }
+        .content-section p, .content-section ul { margin-bottom: 10px; }
+        .content-section ul { list-style-position: inside; padding-left: 0; }
+        .content-section ul li { margin-bottom: 5px; }
+        .highlight { background-color: #e7f3fe; border-left: 4px solid #2196F3; padding: 10px; margin: 15px 0; }
+        footer { text-align: center; padding: 20px; background: #333; color: #fff; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI Agent 기반 주식 분석 비서</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">홈</a></li>
+            <li><a href="ai_agent_introduction.html">AI Agent 소개</a></li>
+            <li><a href="key_features_experience.html">핵심 기능 체험</a></li>
+            <li><a href="warren_buffett_principles.html">워런 버핏 투자 원칙</a></li>
+            <li><a href="start_demo.html">데모 시작하기</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">워런 버핏의 투자 원칙: AI Agent는 어떻게 활용할까요?</h1>
+
+        <section class="content-section">
+            <p>워런 버핏은 시대를 초월하는 가치 투자 철학으로 유명한 투자의 대가입니다. 그의 투자 원칙은 장기적인 관점에서 기업의 본질적인 가치에 집중하며, 재무적으로 건전하고 지속적인 경쟁 우위를 가진 기업을 선별하는 데 중점을 둡니다.</p>
+            <p class="highlight">본 AI Agent 데모에서는 사용자의 요청을 분석하고 종목을 추천할 때, 워런 버핏의 핵심 투자 기준을 하나의 예시적인 로직으로 활용하여 AI Agent가 어떻게 복잡한 기준을 이해하고 적용하는지 보여줍니다. 이는 AI Agent의 유연성과 특정 전문가 시스템을 모방할 수 있는 잠재력을 시연하기 위함입니다.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>워런 버핏의 6단계 투자 필터링 조건 (데모 적용 기준)</h2>
+            <p>다음은 이 데모에서 AI Agent가 특정 요청 시 참고할 수 있는 워런 버핏의 투자 기준입니다.</p>
+
+            <div>
+                <h3>✅ 1. 시가총액 기준</h3>
+                <p><strong>내용:</strong> 전체 상장사 중 시가총액 상위 30% 이내에 포함되어야 함</p>
+                <p><strong>의미:</strong> 충분한 규모와 시장 신뢰도를 갖춘 기업을 선호합니다.</p>
+            </div>
+
+            <div>
+                <h3>✅ 2. 자기자본이익률 (ROE)</h3>
+                <p><strong>내용:</strong> 최근 3년간 ROE가 15% 이상</p>
+                <p><strong>의미:</strong> 투입 자본 대비 수익성이 높아야 함 (자본 효율성)을 의미합니다.</p>
+            </div>
+
+            <div>
+                <h3>✅ 3. 순이익률과 잉여현금흐름</h3>
+                <p><strong>내용:</strong></p>
+                <ul>
+                    <li>매출액 대비 순이익률이 업종 평균 이상</li>
+                    <li>1주당 잉여현금흐름(Free Cash Flow Per Share)이 상위 30%</li>
+                </ul>
+                <p><strong>의미:</strong> 실질 이익과 배당 여력을 중시합니다.</p>
+            </div>
+
+            <div>
+                <h3>✅ 4. 시가총액 증가율 vs 자본 증가율</h3>
+                <p><strong>내용:</strong> 최근 3년간 시가총액 증가율 > 자본 증가율</p>
+                <p><strong>의미:</strong> 이익보다 빠르게 시장 가치가 증가하는 기업을 선호합니다.</p>
+            </div>
+
+            <div>
+                <h3>✅ 5. 5년 예상 잉여현금흐름</h3>
+                <p><strong>내용:</strong> 향후 5년간 예상 잉여현금흐름의 합 > 현재 시가총액</p>
+                <p><strong>의미:</strong> 장기적인 수익 창출력과 시장 저평가 여부를 판단합니다.</p>
+            </div>
+
+            <div>
+                <h3>✅ 6. 성장성과 배당가능성까지 포함 (미래 현금흐름 가치 중시)</h3>
+                <p><strong>내용:</strong> 전통적 PER, PBR보다 미래 현금흐름 대비 가치를 중시</p>
+                <p><strong>의미:</strong> 가치투자자의 본질인 "앞으로 벌 돈 대비 현재 주가가 싼가?"를 판단합니다.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>AI Agent와 워런 버핏 투자 원칙의 결합</h2>
+            <p>AI Agent는 이러한 기준들을 사용자의 요청("워런 버핏 스타일로 좋은 기업 찾아줘")에 따라 적용하거나, 사용자가 특정 기준("ROE 20% 이상이고 잉여현금흐름 좋은 기업")을 직접 제시할 때 이를 이해하고 분석을 수행할 수 있습니다. </p>
+            <p>이 데모를 통해 AI Agent가 어떻게 복잡한 투자 철학이나 방법론을 이해하고, 실제 데이터 분석에 적용하여 사용자에게 유의미한 정보를 제공하는지 체험해보세요. 이는 AI Agent가 다양한 분야에서 전문가의 지식을 활용하여 보조적인 역할을 수행할 수 있는 가능성을 보여줍니다.</p>
+            <p style="text-align:center; margin-top:20px;">
+                <a href="start_demo.html" style="display: inline-block; background: #5cb85c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">AI Agent 데모 체험하기 &raquo;</a>
+            </p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AI Agent Stock Analysis Demo. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

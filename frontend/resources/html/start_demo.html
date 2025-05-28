@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 주식 분석 데모</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* 전체 뷰포트 높이 */
+            overflow: hidden; /* 페이지 전체 스크롤 방지 */
+        }
+
+        /* 헤더 스타일 */
+        header.demo-header {
+            background: #ffffff;
+            color: #1c1e21;
+            padding: 10px 20px;
+            text-align: center;
+            border-bottom: 1px solid #dddfe2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px; /* 고정 높이 */
+            box-sizing: border-box;
+        }
+        header.demo-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        header.demo-header a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        header.demo-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* 메인 컨테이너 (좌우 패널 래퍼) */
+        .demo-main-container {
+            display: flex;
+            flex-grow: 1; /* 헤더 제외한 나머지 공간 모두 차지 */
+            overflow: hidden; /* 내부 패널 스크롤은 각자 처리 */
+        }
+
+        /* 좌측 패널 */
+        .left-panel {
+            width: 380px; /* 고정 너비 또는 flex-basis: 35%; */
+            background-color: #ffffff;
+            border-right: 1px solid #dddfe2;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        /* 우측 패널 */
+        .right-panel {
+            flex-grow: 1; /* 남은 공간 모두 차지 */
+            background-color: #f0f2f5; /* 배경색 약간 다르게 */
+            padding: 20px;
+            overflow-y: auto; /* 내용 많을 시 스크롤 */
+            box-sizing: border-box;
+        }
+        .right-panel h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        /* 좌측 패널 내부 섹션 스타일 */
+        .chat-history-pane, .agent-action-log-pane {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .chat-history-pane {
+            flex-grow: 1; /* 대화창이 공간 더 차지 */
+            min-height: 200px;
+        }
+        .agent-action-log-pane {
+            height: 150px; /* 고정 높이 또는 flex-grow: 0.5; */
+            font-size: 0.85em;
+            color: #555;
+        }
+        .agent-action-log-pane h3, .chat-input-form h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        /* 채팅 메시지 스타일 */
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #0084ff;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto; /* 오른쪽 정렬 */
+            border-bottom-right-radius: 5px;
+        }
+        .agent-message {
+            background-color: #e4e6eb;
+            color: #050505;
+            align-self: flex-start;
+            margin-right: auto; /* 왼쪽 정렬 */
+            border-bottom-left-radius: 5px;
+        }
+        .message .sender {
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        /* Agent 활동 로그 아이템 스타일 */
+        .log-item {
+            padding: 4px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        .log-item .icon {
+            margin-right: 5px;
+        }
+
+        /* 질문 입력창 스타일 */
+        .chat-input-form {
+            margin-top: auto; /* 하단에 고정되도록 */
+        }
+        .chat-input-form textarea {
+            width: calc(100% - 22px); /* padding, border 고려 */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            resize: none;
+            min-height: 40px; /* 기본 높이 */
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        .chat-input-form .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .chat-input-form button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .chat-input-form button.send-button {
+            background-color: #007bff;
+            color: white;
+            flex-grow: 1; /* 전송 버튼이 공간 더 차지 */
+        }
+        .chat-input-form button.send-button:hover {
+            background-color: #0056b3;
+        }
+        .chat-input-form .suggested-prompt-button {
+            background-color: #f0f0f0;
+            color: #333;
+            margin-left: 5px;
+            font-size: 0.8em;
+            padding: 8px 10px;
+        }
+        .chat-input-form .suggested-prompt-button:hover {
+            background-color: #e0e0e0;
+        }
+
+
+        /* 우측 패널 - 결과 카드 스타일 */
+        .results-container {
+            display: flex;
+            flex-wrap: wrap; /* 카드 여러 개일 경우 줄바꿈 */
+            gap: 15px; /* 카드 사이 간격 */
+        }
+        .company-card {
+            background-color: #fff;
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            padding: 15px;
+            width: calc(50% - 30px); /* 예시: 2열 배치, gap 고려 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .company-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #0056b3;
+        }
+        .company-card p {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .company-card .criteria-match {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .company-card .details-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .company-card .details-button:hover {
+            background-color: #1e7e34;
+        }
+
+        /* 우측 패널 - 상세 정보 스타일 */
+        .company-details-view {
+             background-color: #fff;
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .company-details-view h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .company-details-view .data-section {
+            margin-bottom: 20px;
+        }
+        .company-details-view .data-section h4 {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        .company-details-view .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .company-details-view table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .company-details-view th, .company-details-view td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .company-details-view th {
+            background-color: #f8f9fa;
+        }
+        .company-details-view .agent-comment {
+            background-color: #e7f3fe;
+            border-left: 4px solid #007bff;
+            padding: 10px;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        /* 초기 환영 메시지 */
+        .welcome-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #555;
+            font-size: 1.1em;
+        }
+        .welcome-message h2 {
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="demo-header">
+        <h1>AI Agent 주식 분석 데모</h1>
+        <a href="index.html">소개 페이지로 돌아가기</a>
+    </header>
+
+    <main class="demo-main-container">
+        <aside class="left-panel">
+            <section class="chat-history-pane" aria-labelledby="chat-history-label">
+                <h3 id="chat-history-label" class="visually-hidden">대화 기록</h3>
+                <div class="message agent-message">
+                    <span class="sender">AI Agent</span>
+                    안녕하세요! AI 주식 분석 비서입니다. 무엇을 도와드릴까요? 예를 들어 "워런 버핏 기준으로 회사 찾아줘" 와 같이 질문해보세요.
+                </div>
+                <div class="message user-message">
+                    <span class="sender">사용자</span>
+                    안녕, AI Agent. 워런 버핏 기준으로 투자할 만한 회사 좀 찾아줄래?
+                </div>
+                <div class="message agent-message">
+                    <span class="sender">AI Agent</span>
+                    네, 알겠습니다. 워런 버핏 투자 기준(6단계)을 적용하여 분석을 시작하겠습니다. 우측 화면에서 결과를 확인하시거나, 상세 분석이 필요하면 기업명을 말씀해주세요.
+                </div>
+            </section>
+
+            <section class="agent-action-log-pane" aria-labelledby="agent-log-label">
+                <h3 id="agent-log-label">Agent 활동 로그</h3>
+                <div class="log-item"><span class="icon">💬</span> 사용자 요청 분석: "워런 버핏 기준" 확인...</div>
+                <div class="log-item"><span class="icon">⚙️</span> 플랜 수립: 6단계 필터링 적용</div>
+                <div class="log-item"><span class="icon">🔍</span> 1단계: [KRX 데이터 조회] 시가총액 상위 30% 필터링 중...</div>
+                <div class="log-item"><span class="icon">📊</span> 2단계: [OpenDART 재무정보] 및 [내부 계산] ROE 15% 이상 필터링 중...</div>
+                <div class="log-item"><span class="icon">⏳</span> (나머지 단계 수행 중...)</div>
+            </section>
+
+            <form class="chat-input-form" onsubmit="return false;"> <h3>질문 입력</h3>
+                <textarea placeholder="AI Agent에게 요청하세요..." aria-label="질문 입력창"></textarea>
+                <div class="button-group">
+                    <button type="submit" class="send-button">전송</button>
+                    <button type="button" class="suggested-prompt-button">워런 버핏 기준</button>
+                    <button type="button" class="suggested-prompt-button">다른 조건</button>
+                </div>
+            </form>
+        </aside>
+
+        <section class="right-panel" aria-labelledby="results-panel-label">
+            <h2 id="results-panel-label">분석 결과: 워런 버핏 기준 추천 종목</h2>
+            <div class="results-container">
+                <article class="company-card">
+                    <h3>(주) 가나다전자</h3>
+                    <p><strong>주요 지표:</strong> ROE 22%, PBR 1.2, 시총 5조</p>
+                    <p class="criteria-match">워런 버핏 기준: 5/6 충족</p>
+                    <button class="details-button">상세 보기</button>
+                </article>
+                <article class="company-card">
+                    <h3>(주) 마이크로솔루션</h3>
+                    <p><strong>주요 지표:</strong> ROE 18%, PBR 0.9, 시총 8조</p>
+                    <p class="criteria-match">워런 버핏 기준: 6/6 충족</p>
+                    <button class="details-button">상세 보기</button>
+                </article>
+                <article class="company-card">
+                    <h3>(주) 대한민국철강</h3>
+                    <p><strong>주요 지표:</strong> ROE 16%, PBR 1.0, 시총 3조</p>
+                    <p class="criteria-match">워런 버핏 기준: 4/6 충족</p>
+                    <button class="details-button">상세 보기</button>
+                </article>
+            </div>
+
+            <div class="company-details-view" style="margin-top: 30px;">
+                <h2>(주) 마이크로솔루션 상세 분석</h2>
+                <section class="data-section">
+                    <h4>기본 정보</h4>
+                    <p><strong>현재가:</strong> 150,000원</p>
+                    <p><strong>업종:</strong> 소프트웨어 개발</p>
+                </section>
+                <section class="data-section">
+                    <h4>5년 예상 FCF (Free Cash Flow)</h4>
+                    <div class="chart-placeholder">FCF 예측 차트 (예시)</div>
+                    <table>
+                        <thead><tr><th>연도</th><th>예상 FCF (억원)</th></tr></thead>
+                        <tbody>
+                            <tr><td>2025</td><td>800</td></tr>
+                            <tr><td>2026</td><td>850</td></tr>
+                            <tr><td>2027</td><td>920</td></tr>
+                            <tr><td>2028</td><td>1000</td></tr>
+                            <tr><td>2029</td><td>1100</td></tr>
+                            <tr><td><strong>합계</strong></td><td><strong>4670</strong></td></tr>
+                        </tbody>
+                    </table>
+                </section>
+                <section class="data-section">
+                    <h4>Agent 분석 코멘트</h4>
+                    <p class="agent-comment">
+                        (주) 마이크로솔루션의 향후 5년 예상 FCF 총합은 4,670억원으로 현재 시가총액(8조원 가정 시) 대비 양호한 수준입니다.
+                        워런 버핏의 모든 기준을 충족하며, 특히 지속적인 ROE 성장과 안정적인 현금 흐름이 긍정적입니다.
+                    </p>
+                </section>
+            </div>
+
+        </section>
+    </main>
+
+    <style>
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</body>
+</html>
