@@ -12,3 +12,11 @@ pytest-asyncio
 tiktoken
 openai
 azure-identity
+plotly
+# 주피터 노트북을 사용하기 위해 최소한 다음 패키지를 설치하세요.  
+notebook
+jupyterlab
+ipykernel
+pandas
+matplotlib
+ipywidgets
