@@ -6,6 +6,7 @@
 사용자는 자연어로 투자 관련 질문을 입력하고, AI Agent가 다양한 툴(예: BuffettFilterTool, NewsTool, ValuationTool)을 호출하여 데이터를 수집, 가공, 해석한 후 종목 추천 결과를 반환합니다.
 
 ## 프로젝트 구조
+
 ```
 /ai_agent_demo
 ├── frontend/
