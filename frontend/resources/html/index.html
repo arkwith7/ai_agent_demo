@@ -3,288 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent 주식 분석 비서 - 홈</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../css/styles.css">
+    <title>AI 투자 분석</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@heroicons/vue@2.0.18/24/outline/index.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007bff',
+                        secondary: '#6c757d',
+                        light: '#f8f9fa',
+                        dark: '#212529'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --light-bg: #f8f9fa;
-            --border-color: #dee2e6;
-            --text-color: #212529;
-            --card-bg: #ffffff;
-            --hover-darken-primary: #0056b3;
+        .nav-link {
+            @apply text-secondary hover:text-primary transition-colors;
         }
-
-        body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        .btn-primary {
+            @apply bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors inline-flex items-center;
         }
-
-        header.static-header {
-            background: var(--card-bg);
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        header.static-header .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header.static-header .logo {
-            font-size: 1.8em;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-        }
-        header.static-header .logo .fa-brain {
-             margin-right: 8px;
-        }
-        nav ul {
-            padding: 0;
-            list-style: none;
-            text-align: center;
-            margin: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin-left: 25px; /* 첫 번째 li에도 margin-left 적용되도록 수정 가능 또는 :first-child 제외 */
-        }
-        nav ul li:first-child {
-            margin-left: 0;
-        }
-        nav ul li a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 8px 0; /* 밑줄과 간격 맞추기 */
-            transition: color 0.2s ease;
-        }
-        nav ul li a:hover, nav ul li a.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(0, 123, 255, 0.05), rgba(0, 123, 255, 0.05)), url('https://source.unsplash.com/random/1600x600/?stocks,technology') no-repeat center center/cover; /* 배경 이미지 예시 */
-            background-color: var(--primary-color); /* 이미지 로드 실패시 대비 */
-            color: var(--text-color); /* 어두운 배경에는 밝은 텍스트, 밝은 배경에는 어두운 텍스트 조정 필요 */
-            padding: 80px 20px;
-            text-align: center;
-        }
-        .hero-content {
-            background-color: rgba(255, 255, 255, 0.85); /* 내용 가독성을 위한 반투명 배경 */
-            display: inline-block;
-            padding: 40px;
-            border-radius: 10px;
-            max-width: 700px;
-        }
-        .hero h1 {
-            margin-bottom: 20px;
-            font-size: 2.8em;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        .hero p {
-            font-size: 1.25em;
-            margin-bottom: 30px;
-            color: var(--secondary-color);
-        }
-        .cta-button {
-            display: inline-block;
-            background: var(--primary-color);
-            color: white;
-            padding: 15px 35px;
-            text-decoration: none;
-            border-radius: 30px; /* 둥근 버튼 */
-            font-size: 1.2em;
-            font-weight: bold;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .cta-button:hover {
-            background-color: var(--hover-darken-primary);
-            transform: translateY(-2px);
-        }
-        .cta-button .fa-arrow-right {
-            margin-left: 10px;
-        }
-
-        /* Main Content Sections */
-        .content-container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: transparent; /* body 배경색 사용 */
-        }
-        .section {
-            padding: 40px 0; /* 상하 패딩 늘림 */
-            margin-bottom: 30px; /* 섹션 간 간격 */
-            border-bottom: 1px solid var(--border-color);
-        }
-        .section:last-child {
-            border-bottom: none;
-        }
-        .section h2 {
-            text-align: center;
-            margin-bottom: 40px; /* 제목과 내용 간 간격 */
-            font-size: 2.2em;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-        .section p {
-            text-align: center;
-            font-size: 1.1em;
-            color: var(--secondary-color);
-            line-height: 1.7;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .section .learn-more-link {
-            display: block; /* 버튼처럼 보이게 */
-            width: fit-content;
-            margin: 20px auto 0 auto;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-            padding: 10px 20px;
-            border: 2px solid var(--primary-color);
-            border-radius: 25px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-        .section .learn-more-link:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        /* Feature Boxes for "주요 체험 포인트" */
-        .features-grid {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 30px; /* 박스 사이 간격 */
-            margin-top: 20px;
+        .section-title {
+            @apply text-3xl font-bold text-primary mb-8 text-center;
         }
         .feature-box {
-            background-color: var(--card-bg);
-            text-align: center;
-            padding: 30px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            flex-basis: calc(33.333% - 40px); /* 3열 기준, gap 고려 */
-            min-width: 280px; /* 최소 너비 */
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            @apply bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow;
         }
-        .feature-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-        }
-        .feature-box .feature-icon {
-            font-size: 3em;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-        .feature-box h3 {
-            font-size: 1.4em;
-            margin-bottom: 15px;
-            color: var(--text-color);
-        }
-        .feature-box p {
-            font-size: 0.95em;
-            color: var(--secondary-color);
-            line-height: 1.6;
-            text-align: center; /* feature-box 내부 p 태그에만 적용 */
-        }
-
-        /* Footer */
-        footer.static-footer {
-            text-align: center;
-            padding: 25px;
-            background: #333;
-            color: #bbb;
-            border-top: 1px solid #444;
-            margin-top: auto; /* 내용 짧아도 하단 고정 */
-        }
-        footer.static-footer p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-
     </style>
 </head>
-<body>
-    <!-- Header Component -->
-    <div id="header-placeholder"></div>
-
-    <section class="hero">
-        <div class="hero-content">
-            <h1>AI Agent, <br>나만의 주식 분석 비서를 경험하세요.</h1>
-            <p>복잡한 설정과 버튼 클릭은 이제 그만! <br> AI Agent와 대화하며 원하는 종목을 찾고, 분석 과정을 직접 확인해보세요.</p>
-            <a href="start_demo_dynamic.html" class="cta-button">AI Agent 데모 체험하기 <i class="fas fa-arrow-right"></i></a>
-        </div>
-    </section>
-
-    <main class="content-container">
-        <section class="section">
-            <h2>AI Agent 주식 분석, 무엇이 다른가요?</h2>
-            <p>본 데모 서비스는 단순한 종목 추천을 넘어, AI Agent가 사용자의 요청을 어떻게 이해하고, 어떤 과정을 통해 정보를 분석하여 결과를 도출하는지 그 '경험'에 초점을 맞추고 있습니다. AI Agent의 능동적인 문제 해결 과정을 직접 체험하며 미래의 투자 방식을 엿볼 수 있습니다.</p>
-            <a href="ai_agent_introduction.html" class="learn-more-link">AI Agent 더 알아보기 &raquo;</a>
-        </section>
-
-        <section class="section">
-            <h2>주요 체험 포인트</h2>
-            <div class="features-grid">
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
-                    <h3>자연어 기반 요청</h3>
-                    <p>"현금흐름 좋고 ROE 높은 IT 기업 찾아줘" 와 같이, 사람에게 말하듯 AI Agent에게 요청하고 결과를 받아보세요.</p>
-                </div>
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-microscope"></i></div>
-                    <h3>투명한 분석 과정</h3>
-                    <p>AI Agent가 어떤 데이터를 조회하고, 어떤 기준으로 종목을 필터링하는지 실시간으로 그 과정을 확인할 수 있습니다.</p>
-                </div>
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                    <h3>대화형 인사이트</h3>
-                    <p>분석 결과에 대해 궁금한 점을 추가로 질문하고, AI Agent와 대화하며 더 깊이 있는 인사이트를 얻을 수 있습니다.</p>
-                </div>
+<body class="min-h-screen bg-light">
+    <div id="app">
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+                    </svg>
+                    AI 투자 분석
+                </h1>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="nav-link">홈</a></li>
+                        <li><a href="#" class="nav-link">투자 분석</a></li>
+                        <li><a href="ai_agent_introduction.html" class="nav-link">AI Agent 소개</a></li>
+                    </ul>
+                </nav>
             </div>
-            <a href="key_features_experience.html" class="learn-more-link">핵심 기능 자세히 보기 &raquo;</a>
-        </section>
-    </main>
+        </header>
 
-    <!-- Footer Component -->
-    <div id="footer-placeholder"></div>
+        <main>
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-r from-primary/5 to-primary/5 py-20">
+                <div class="container mx-auto px-4">
+                    <div class="bg-white/85 inline-block p-10 rounded-lg max-w-3xl">
+                        <h2 class="text-4xl font-bold text-primary mb-6">워런 버핏의 투자 기준으로<br>최적의 종목을 찾아보세요</h2>
+                        <p class="text-xl text-secondary mb-8">AI가 워런 버핏의 6단계 투자 기준을 분석하여<br>가장 적합한 투자 종목을 추천해드립니다.</p>
+                        <a href="#" class="btn-primary">
+                            투자 분석 시작하기
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 ml-2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Investment Criteria Section -->
+            <section class="py-16">
+                <div class="container mx-auto px-4">
+                    <h2 class="section-title">워런 버핏의 6단계 투자 기준</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">1. 시가총액 기준</h3>
+                            <p class="text-secondary">전체 상장사 중 시가총액 상위 30% 이내에 포함되어야 함</p>
+                            <p class="text-sm text-primary mt-2">→ 충분한 규모와 시장 신뢰도를 갖춘 기업 선호</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">2. 자기자본이익률 (ROE)</h3>
+                            <p class="text-secondary">최근 3년간 ROE가 15% 이상</p>
+                            <p class="text-sm text-primary mt-2">→ 투입 자본 대비 수익성이 높아야 함</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">3. 순이익률과 잉여현금흐름</h3>
+                            <p class="text-secondary">매출액 대비 순이익률이 업종 평균 이상, 1주당 잉여현금흐름이 상위 30%</p>
+                            <p class="text-sm text-primary mt-2">→ 실질 이익과 배당 여력 중시</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">4. 시가총액 vs 자본 증가율</h3>
+                            <p class="text-secondary">최근 3년간 시가총액 증가율 > 자본 증가율</p>
+                            <p class="text-sm text-primary mt-2">→ 이익보다 빠르게 시장 가치가 증가하는 기업 선호</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">5. 5년 예상 잉여현금흐름</h3>
+                            <p class="text-secondary">향후 5년간 예상 잉여현금흐름의 합 > 현재 시가총액</p>
+                            <p class="text-sm text-primary mt-2">→ 장기적인 수익 창출력과 시장 저평가 여부 판단</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">6. 성장성과 배당가능성</h3>
+                            <p class="text-secondary">전통적 PER, PBR보다 미래 현금흐름 대비 가치를 중시</p>
+                            <p class="text-sm text-primary mt-2">→ 가치투자자의 본질: "앞으로 벌 돈 대비 현재 주가가 싼가?"</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Analysis Section -->
+            <section class="bg-primary/5 py-16">
+                <div class="container mx-auto px-4">
+                    <h2 class="section-title">AI 분석 프로세스</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">데이터 수집</h3>
+                            <p class="text-secondary">KRX, OpenDART 등에서 실시간 데이터를 수집하여 분석합니다.</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">AI 분석</h3>
+                            <p class="text-secondary">워런 버핏의 6단계 투자 기준에 따라 AI가 종목을 분석합니다.</p>
+                        </div>
+
+                        <div class="feature-box">
+                            <div class="text-primary text-4xl mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4">결과 제공</h3>
+                            <p class="text-secondary">분석 결과를 시각적으로 제공하고 투자 의사결정을 도와드립니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-white border-t border-gray-200 py-8">
+            <div class="container mx-auto px-4 text-center text-secondary">
+                <p>&copy; 2024 AI 투자 분석. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
 
     <script>
-        // Load header and footer components
-        fetch('../components/header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-placeholder').innerHTML = data;
-            });
+        const { createApp } = Vue
 
-        fetch('../components/footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-placeholder').innerHTML = data;
-            });
+        createApp({
+            data() {
+                return {
+                    // 데이터는 추후 구현
+                }
+            }
+        }).mount('#app')
     </script>
 </body>
 </html>

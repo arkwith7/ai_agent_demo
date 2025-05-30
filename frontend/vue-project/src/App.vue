@@ -1,20 +1,5 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import AppHeader from './components/layout/AppHeader.vue'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const isHomePage = computed(() => route.path === '/')
-</script>
-
 <template>
-  <div class="app" :class="{ 'home-page': isHomePage }">
-    <AppHeader />
-    <main class="main-content">
-      <RouterView />
-    </main>
-  </div>
+  <router-view></router-view>
 </template>
 
 <style>
@@ -42,7 +27,8 @@ body {
   background-color: var(--light-bg);
   color: var(--text-color);
   min-height: 100vh;
-
+  display: flex;
+  justify-content: center;
 }
 
 /* Font Awesome 아이콘 전역 스타일 */
