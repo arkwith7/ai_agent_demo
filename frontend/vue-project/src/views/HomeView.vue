@@ -62,7 +62,7 @@ const features = ref([
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* flex-start로 변경하여 더 자연스러운 레이아웃 */
   text-align: center;
   width: 100%;
 }
@@ -78,25 +78,28 @@ const features = ref([
 }
 
 .hero-content {
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 40px;
-  border-radius: 10px;
-  max-width: 700px;
+  background-color: rgba(255, 255, 255, 0.95); /* 투명도 증가 */
+  padding: 50px; /* 패딩 증가 */
+  border-radius: 15px; /* 더 둥근 모서리 */
+  max-width: 800px; /* 최대 너비 증가 */
   width: 100%;
   margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 }
 
 .hero h1 {
-  margin-bottom: 20px;
-  font-size: 2.8em;
+  margin-bottom: 25px;
+  font-size: 3em;
   font-weight: 700;
   color: var(--primary-color);
+  line-height: 1.2;
 }
 
 .hero p {
-  font-size: 1.25em;
-  margin-bottom: 30px;
+  font-size: 1.3em;
+  margin-bottom: 35px;
   color: var(--secondary-color);
+  line-height: 1.6;
 }
 
 .cta-button {
@@ -104,40 +107,41 @@ const features = ref([
   align-items: center;
   background: var(--primary-color);
   color: white;
-  padding: 15px 35px;
+  padding: 18px 40px; /* 패딩 증가 */
   text-decoration: none;
-  border-radius: 30px;
-  font-size: 1.2em;
+  border-radius: 35px; /* 더 둥근 모서리 */
+  font-size: 1.3em;
   font-weight: bold;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3); /* 더 강한 그림자 */
 }
 
 .cta-button .arrow {
-  margin-left: 8px;
+  margin-left: 10px;
   font-size: 1.2em;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 .cta-button:hover {
   background-color: var(--hover-darken-primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
 }
 
 .cta-button:hover .arrow {
-  transform: translateX(4px);
+  transform: translateX(5px);
 }
 
 .content-container {
   width: 100%;
-  max-width: 1100px;
-  margin: 40px auto;
+  max-width: 1200px; /* 최대 너비 증가 */
+  margin: 50px auto;
   padding: 20px;
 }
 
 .section {
-  padding: 40px 0;
-  margin-bottom: 30px;
+  padding: 60px 0; /* 패딩 증가 */
+  margin-bottom: 40px;
   border-bottom: 1px solid var(--border-color);
   text-align: center;
 }
@@ -148,19 +152,19 @@ const features = ref([
 
 .section h2 {
   text-align: center;
-  margin-bottom: 40px;
-  font-size: 2.2em;
+  margin-bottom: 30px;
+  font-size: 2.5em; /* 폰트 크기 증가 */
   color: var(--text-color);
   font-weight: 600;
 }
 
 .section p {
   text-align: center;
-  font-size: 1.1em;
+  font-size: 1.2em; /* 폰트 크기 증가 */
   color: var(--secondary-color);
-  line-height: 1.7;
-  max-width: 700px;
-  margin: 0 auto 20px;
+  line-height: 1.8;
+  max-width: 900px; /* 최대 너비 증가 */
+  margin: 0 auto 30px;
 }
 
 .learn-more-link {
@@ -169,58 +173,60 @@ const features = ref([
   color: var(--primary-color);
   text-decoration: none;
   font-weight: bold;
-  padding: 10px 20px;
+  padding: 12px 25px; /* 패딩 증가 */
   border: 2px solid var(--primary-color);
-  border-radius: 25px;
-  transition: all 0.2s ease;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  font-size: 1.1em;
 }
 
 .learn-more-link:hover {
   background-color: var(--primary-color);
   color: white;
+  transform: translateY(-2px);
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* 최소 너비 증가 */
+  gap: 40px; /* 간격 증가 */
+  margin-top: 40px;
   width: 100%;
 }
 
 .feature-box {
   background-color: var(--card-bg);
   text-align: center;
-  padding: 30px 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 40px 30px; /* 패딩 증가 */
+  border-radius: 15px; /* 더 둥근 모서리 */
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08); /* 더 강한 그림자 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .feature-box:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+  transform: translateY(-8px); /* 더 큰 움직임 */
+  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
 }
 
 .feature-box .feature-icon {
-  font-size: 3em;
+  font-size: 3.5em; /* 아이콘 크기 증가 */
   color: var(--primary-color);
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   display: block;
   width: 100%;
   text-align: center;
 }
 
 .feature-box h3 {
-  font-size: 1.4em;
-  margin-bottom: 15px;
+  font-size: 1.5em; /* 폰트 크기 증가 */
+  margin-bottom: 20px;
   color: var(--text-color);
 }
 
 .feature-box p {
-  font-size: 0.95em;
+  font-size: 1em;
   color: var(--secondary-color);
-  line-height: 1.6;
+  line-height: 1.7;
   text-align: center;
   margin: 0;
 }
@@ -234,8 +240,31 @@ const features = ref([
     font-size: 1.1em;
   }
 
+  .hero-content {
+    padding: 30px;
+    max-width: 90%;
+  }
+
+  .cta-button {
+    padding: 15px 30px;
+    font-size: 1.1em;
+  }
+
+  .section h2 {
+    font-size: 2em;
+  }
+
+  .section p {
+    font-size: 1.1em;
+  }
+
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .feature-box {
+    padding: 30px 20px;
   }
 }
 </style>

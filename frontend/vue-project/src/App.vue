@@ -42,8 +42,7 @@ body {
   background-color: var(--light-bg);
   color: var(--text-color);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
+
 }
 
 /* Font Awesome 아이콘 전역 스타일 */
