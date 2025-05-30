@@ -2,7 +2,8 @@
   <header class="static-header" v-if="!isHomePage">
     <div class="container">
       <router-link to="/" class="logo">
-        <i class="fa-solid fa-brain"></i>AI Agent
+        <Icon icon="mdi:brain" class="logo-icon" />
+        AI Agent
       </router-link>
       <nav>
         <ul>
@@ -21,6 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { Icon } from '@iconify/vue'
 
 const route = useRoute()
 const isHomePage = computed(() => route.path === '/')
@@ -49,13 +51,16 @@ const isHomePage = computed(() => route.path === '/')
 }
 
 .logo {
-  font-size: 1.8em;
-  color: var(--primary-color);
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  color: var(--primary-color);
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
-.logo .fa-brain {
+.logo-icon {
+  font-size: 1.8rem;
   margin-right: 8px;
 }
 

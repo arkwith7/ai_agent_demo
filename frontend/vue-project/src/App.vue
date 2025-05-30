@@ -28,6 +28,12 @@ const isHomePage = computed(() => route.path === '/')
   --hover-darken-primary: #0056b3;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
@@ -36,6 +42,26 @@ body {
   background-color: var(--light-bg);
   color: var(--text-color);
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Font Awesome 아이콘 전역 스타일 */
+.fa-solid,
+.fas {
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* 이미지 전역 스타일 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 
 .app {
@@ -43,6 +69,8 @@ body {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .app:not(.home-page) {
@@ -52,10 +80,8 @@ body {
 .main-content {
   flex: 1;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
   padding: 0 20px;
-  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
