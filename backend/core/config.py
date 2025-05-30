@@ -1,5 +1,8 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "AI Agent Backend"
@@ -54,7 +57,7 @@ class Settings(BaseSettings):
     DBPIA_API_KEY: str | None = None
 
     class Config:
-        env_file = "backend/.env"
+        env_file = "./.env"
         env_file_encoding = "utf-8"
 
 @lru_cache()
