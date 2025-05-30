@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from db.base_class import Base
 
 class TokenUsageLog(Base):
@@ -10,3 +11,6 @@ class TokenUsageLog(Base):
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    user = relationship("User", back_populates="token_usage_logs")

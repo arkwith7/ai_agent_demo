@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from api.routers.auth import router as auth_router
 from api.routers.ai_service import router as ai_service_router
+from api.routers.user_management import router as user_management_router
 from db.init_db import init_models
 
 app = FastAPI(
@@ -26,6 +27,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(ai_service_router, prefix="/ai", tags=["ai"])
+app.include_router(user_management_router, prefix="/admin", tags=["user-management"])
 
 # Database initialization on startup
 @app.on_event("startup")

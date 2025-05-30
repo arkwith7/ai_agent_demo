@@ -1,6 +1,12 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from db.base_class import Base
+import enum
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 class User(Base):
     __tablename__ = "users"
@@ -9,5 +15,9 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    # 토큰 사용량 관련 필드는 별도 테이블로 관리 권장
+    
+    # Relationships
+    token_usage_logs = relationship("TokenUsageLog", back_populates="user")
+    query_histories = relationship("QueryHistory", back_populates="user")
