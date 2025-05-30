@@ -1,22 +1,16 @@
 FastAPI
 SQLAlchemy
 streamlit
-langchain
+aiosqlite
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain_community
 python-dotenv
 uvicorn
 pydantic
 httpx
-jwt
 pytest
 pytest-asyncio
 tiktoken
-openai
+openai>=1.0.0
 azure-identity
-plotly
-# 주피터 노트북을 사용하기 위해 최소한 다음 패키지를 설치하세요.  
-notebook
-jupyterlab
-ipykernel
-pandas
-matplotlib
-ipywidgets
