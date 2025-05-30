@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from api.routers.auth import router as auth_router
 from api.routers.ai_service import router as ai_service_router
+from db.init_db import init_models
 
 app = FastAPI(
     title="AI Agent Backend",
@@ -25,6 +26,11 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(ai_service_router, prefix="/ai", tags=["ai"])
+
+# Database initialization on startup
+@app.on_event("startup")
+async def startup_event():
+    await init_models()
 
 # Swagger UI에서 JWT 인증 헤더 입력 지원
 # (FastAPI 공식 문서 참고)
