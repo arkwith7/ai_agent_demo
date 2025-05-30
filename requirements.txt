@@ -14,3 +14,20 @@ pytest-asyncio
 tiktoken
 openai>=1.0.0
 azure-identity
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+email-validator
+python-multipart
+
+# JWT 설정
+JWT_SECRET_KEY=000d26df21ff8ac0256840c15116028a22c6746dae9a1da861841a037eee193c
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Azure OpenAI 설정
+AZURE_OPENAI_API_KEY=your-azure-openai-api-key
+AZURE_OPENAI_ENDPOINT=your-azure-openai-endpoint
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=your-deployment-name
