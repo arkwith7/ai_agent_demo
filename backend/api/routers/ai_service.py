@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from schemas.user import UserRead
 from api import deps
 from services import azure_openai_service
@@ -34,19 +34,22 @@ class BuffettAnalysisResponse(BaseModel):
     analysis_metadata: Dict[str, Any]
     raw_output: str
 
+class ChatRequest(BaseModel):
+    query: str
+
 @router.post("/chat")
 async def chat_with_ai(
-    query: str,
+    request: ChatRequest,
     background_tasks: BackgroundTasks,
     current_user: UserRead = Depends(deps.get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
-    ai_response, input_tokens, output_tokens = await azure_openai_service.get_ai_response(query)
+    ai_response, input_tokens, output_tokens = await azure_openai_service.get_ai_response(request.query)
     background_tasks.add_task(
         crud_query_history.create_query_log,
         db=db,
         user_id=current_user.id,
-        query_text=query,
+        query_text=request.query,
         response_text=ai_response,
         ai_model_name=settings.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
     )
@@ -205,3 +208,32 @@ async def stock_analysis(
             ],
             "error": str(e)
         }
+
+@router.get("/me/chat-history")
+async def get_chat_history(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    current_user: UserRead = Depends(deps.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    현재 로그인한 사용자의 채팅 히스토리 반환 (페이징)
+    """
+    skip = (page - 1) * size
+    histories, total = await crud_query_history.get_user_chat_history(
+        db=db,
+        user_id=current_user.id,
+        skip=skip,
+        limit=size
+    )
+    # 필요한 필드만 반환 (예시)
+    result = [
+        {
+            "id": h.id,
+            "query_text": h.query_text,
+            "response_text": h.response_text,
+            "created_at": h.created_at
+        }
+        for h in histories
+    ]
+    return {"histories": result, "total": total}

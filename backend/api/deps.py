@@ -20,10 +20,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     payload = decode_token(token)
     if payload is None:
         raise credentials_exception
-    username: str = payload.get("sub")
-    if username is None:
+    email: str = payload.get("sub")
+    if email is None:
         raise credentials_exception
-    user = await crud_user.get_user_by_username(db, username=username)
+    user = await crud_user.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
     return user

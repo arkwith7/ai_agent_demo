@@ -7,8 +7,16 @@ from core.security import verify_password, create_access_token, create_refresh_t
 from db.session import get_db
 from api.routers.crud import crud_user
 from db.models.user import UserRole
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/register", response_model=UserRead, summary="사용자 회원가입")
 async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
@@ -30,15 +38,15 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return UserRead.model_validate(user_obj)
 
 @router.post("/login", response_model=Token, summary="사용자 로그인")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     """
     사용자 로그인 및 JWT 토큰 발급
     """
-    user = await crud_user.get_user_by_username(db, username=form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    user = await crud_user.get_user_by_email(db, email=login_data.email)
+    if not user or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
     if not user.is_active:
@@ -46,14 +54,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     
     access_token = create_access_token(
         data={
-            "sub": user.username, 
+            "sub": user.email,  # username 대신 email 사용
             "user_id": user.id,
             "role": user.role.value
         }
     )
     refresh_token = create_refresh_token(
         data={
-            "sub": user.username, 
+            "sub": user.email,  # username 대신 email 사용
             "user_id": user.id,
             "role": user.role.value
         }
@@ -66,25 +74,25 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     )
 
 @router.post("/refresh", response_model=Token, summary="토큰 갱신")
-async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
+async def refresh_token(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
     """
     Refresh token을 사용하여 새로운 access token 발급
     """
     from core.security import decode_token
-    payload = decode_token(refresh_token)
+    payload = decode_token(request.refresh_token)
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Invalid refresh token"
         )
     
-    user = await crud_user.get_user_by_username(db, username=payload.get("sub"))
+    user = await crud_user.get_user_by_email(db, email=payload.get("sub"))  # username 대신 email 사용
     if not user or not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     
     access_token = create_access_token(
         data={
-            "sub": user.username, 
+            "sub": user.email,  # username 대신 email 사용
             "user_id": user.id,
             "role": user.role.value
         }

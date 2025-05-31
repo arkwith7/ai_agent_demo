@@ -34,6 +34,10 @@
           </div>
           
           <form class="mt-4 space-y-4" @submit.prevent="handleSignUp">
+            <div v-if="error" class="p-3 bg-red-50 text-red-600 rounded-md text-sm">
+              {{ error }}
+            </div>
+
             <div class="space-y-3">
               <div>
                 <label for="name" class="block text-sm font-medium text-secondary">이름</label>
@@ -102,9 +106,10 @@
             <div>
               <button
                 type="submit"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                :disabled="isLoading"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                회원가입
+                {{ isLoading ? '처리 중...' : '회원가입' }}
               </button>
             </div>
           </form>
@@ -126,6 +131,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { authService } from '../services/api'
 
 const router = useRouter()
 const name = ref('')
@@ -133,27 +139,44 @@ const email = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
 const agreeTerms = ref(false)
+const error = ref('')
+const isLoading = ref(false)
 
 const handleSignUp = async () => {
   try {
     // 비밀번호 확인
     if (password.value !== passwordConfirm.value) {
-      alert('비밀번호가 일치하지 않습니다.')
+      error.value = '비밀번호가 일치하지 않습니다.'
       return
     }
 
-    // TODO: 실제 회원가입 로직 구현
-    console.log('Sign up attempt:', {
-      name: name.value,
+    // 비밀번호 유효성 검사
+    if (password.value.length < 8) {
+      error.value = '비밀번호는 8자 이상이어야 합니다.'
+      return
+    }
+
+    isLoading.value = true
+    error.value = ''
+
+    // 회원가입 API 호출
+    await authService.register({
+      username: name.value,
       email: email.value,
-      password: password.value,
-      agreeTerms: agreeTerms.value
+      password: password.value
     })
     
     // 회원가입 성공 시 로그인 페이지로 이동
     router.push('/signin')
   } catch (error) {
     console.error('Sign up failed:', error)
+    if (error.response?.data?.detail) {
+      error.value = error.response.data.detail
+    } else {
+      error.value = '회원가입 중 오류가 발생했습니다.'
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 </script>

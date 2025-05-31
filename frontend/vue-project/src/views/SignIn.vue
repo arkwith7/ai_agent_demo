@@ -32,6 +32,10 @@
           </div>
           
           <form class="mt-4 space-y-4" @submit.prevent="handleLogin">
+            <div v-if="error" class="p-3 bg-red-50 text-red-600 rounded-md text-sm">
+              {{ error }}
+            </div>
+
             <div class="space-y-4">
               <div>
                 <label for="email" class="block text-sm font-medium text-secondary">이메일</label>
@@ -81,9 +85,10 @@
             <div>
               <button
                 type="submit"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                :disabled="isLoading"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                로그인
+                {{ isLoading ? '로그인 중...' : '로그인' }}
               </button>
             </div>
           </form>
@@ -139,26 +144,36 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { authService } from '../services/api'
+import emitter from '../eventBus'
 
+const route = useRoute()
 const router = useRouter()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const error = ref('')
+const isLoading = ref(false)
 
 const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    error.value = '이메일과 비밀번호를 모두 입력해주세요.'
+    return
+  }
+
   try {
-    // TODO: 실제 로그인 로직 구현
-    console.log('Login attempt:', {
-      email: email.value,
-      password: password.value,
-      rememberMe: rememberMe.value
-    })
-    
-    // 로그인 성공 시 분석 페이지로 이동
-    router.push('/analysis')
+    isLoading.value = true
+    error.value = ''
+    await authService.login(email.value, password.value)
+    emitter.emit('auth-change')
+    const redirect = route.query.redirect || '/'
+    window.location.href = redirect
   } catch (error) {
-    console.error('Login failed:', error)
+    console.error('Login error:', error)
+    error.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
