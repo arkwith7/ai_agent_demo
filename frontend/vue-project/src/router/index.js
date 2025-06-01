@@ -22,7 +22,8 @@ const router = createRouter({
     {
       path: '/analysis',
       name: 'analysis',
-      component: Analysis
+      component: Analysis,
+      meta: { requiresAuth: true }
     },
     {
       path: '/intro-ai-agent',
@@ -40,6 +41,18 @@ const router = createRouter({
       component: SignUp
     }
   ]
+})
+
+// 인증 가드
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('access_token')
+  
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // 인증이 필요한 페이지에 접근하려고 할 때 로그인 페이지로 리다이렉트
+    next({ name: 'signin', query: { redirect: to.fullPath } })
+  } else {
+    next()
+  }
 })
 
 export default router 

@@ -21,3 +21,4 @@ class User(Base):
     # Relationships
     token_usage_logs = relationship("TokenUsageLog", back_populates="user")
     query_histories = relationship("QueryHistory", back_populates="user")
+    chat_sessions = relationship("ChatSession", back_populates="user")

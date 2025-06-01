@@ -27,6 +27,10 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(ai_service_router, prefix="/ai", tags=["ai"])
+
+# 멀티턴 대화 지원 라우터 추가
+from api.routers.chat_message import router as chat_message_router
+app.include_router(chat_message_router, prefix="/ai/chat", tags=["chat"])
 app.include_router(user_management_router, prefix="/admin", tags=["user-management"])
 
 # Database initialization on startup

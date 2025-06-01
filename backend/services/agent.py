@@ -90,6 +90,10 @@ class WarrenBuffettAgent:
 - 이모지를 사용해 시각적으로 이해하기 쉽게 표현하세요
 
 사용 가능한 도구들을 활용하여 종합적이고 현대적인 투자 분석을 제공하세요.
+# 시스템 행동 지침
+- 사용자가 2턴 이내에 종목 추천 또는 특정 종목 분석을 명확히 요구하지 않으면, 워런 버핏 8단계 기준에 따라 종목 추천 또는 분석을 먼저 제안하고, 구체적인 종목명을 입력하도록 유도하세요.
+- 투자 관련 대화에서는 반드시 종목 추천, 종목 분석, 투자 기준 설명 중 하나 이상의 구체적 결과를 제공하세요.
+- 답변은 항상 구조화된 JSON(텍스트, 표, 차트 등 타입 구분)으로 반환하세요.
 """
         
         # 프롬프트 템플릿 생성
@@ -117,38 +121,45 @@ class WarrenBuffettAgent:
     
     async def analyze_stock(self, question: str) -> Dict[str, Any]:
         """
-        주식 분석 수행
-        
-        Args:
-            question: 사용자의 분석 질문
-            
-        Returns:
-            Dict: 분석 결과와 메타데이터
+        주식 분석 수행 (구조화된 JSON 결과 반환)
         """
         try:
             logger.info(f"Starting stock analysis for question: {question}")
-            
             # 에이전트 실행
             result = await asyncio.get_event_loop().run_in_executor(
-                None, 
+                None,
                 lambda: self.agent_executor.invoke({"input": question})
             )
-            
-            # 결과 파싱
             analysis_output = result.get("output", "")
-            
-            # 분석 결과를 구조화된 형태로 변환
+            # 구조화된 JSON 파싱 시도
+            try:
+                parsed = json.loads(analysis_output) if isinstance(analysis_output, str) else analysis_output
+                # content_type, structured_data, text 필드가 있으면 그대로 반환
+                if isinstance(parsed, dict) and "content_type" in parsed:
+                    logger.info("Structured JSON result detected from agent.")
+                    return {
+                        "recommendations": [parsed.get("text", "")],
+                        "raw_output": analysis_output,
+                        "tools_used": self._extract_tools_used(result),
+                        "success": True,
+                        "content_type": parsed.get("content_type"),
+                        "structured_data": parsed.get("structured_data"),
+                        "text": parsed.get("text", "")
+                    }
+            except Exception as e:
+                logger.warning(f"Agent output is not valid JSON: {e}")
+            # fallback: 기존 텍스트 파싱
             recommendations = self._parse_analysis_output(analysis_output)
-            
             logger.info(f"Analysis completed with {len(recommendations)} recommendations")
-            
             return {
                 "recommendations": recommendations,
                 "raw_output": analysis_output,
                 "tools_used": self._extract_tools_used(result),
-                "success": True
+                "success": True,
+                "content_type": "text",
+                "structured_data": None,
+                "text": analysis_output
             }
-            
         except Exception as e:
             logger.error(f"Error in stock analysis: {str(e)}")
             return {
@@ -158,7 +169,10 @@ class WarrenBuffettAgent:
                 ],
                 "raw_output": str(e),
                 "tools_used": [],
-                "success": False
+                "success": False,
+                "content_type": "text",
+                "structured_data": None,
+                "text": str(e)
             }
     
     def _parse_analysis_output(self, output: str) -> List[str]:
