@@ -1,60 +1,37 @@
 <template>
   <div class="min-h-screen bg-light">
-    <main class="container mx-auto px-4 pt-8 pb-8">
-      <!-- 모바일 화면에서의 채팅 히스토리 토글 버튼 -->
-      <div class="lg:hidden mb-4">
-        <button 
-          @click="showMobileHistory = !showMobileHistory"
-          class="w-full bg-white rounded-lg shadow-sm p-4 flex items-center justify-between"
-        >
-          <span class="font-medium">채팅 히스토리</span>
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke-width="1.5" 
-            stroke="currentColor" 
-            class="w-5 h-5 transform transition-transform"
-            :class="{ 'rotate-180': showMobileHistory }"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 relative">
-        <!-- 토글 버튼: 데스크탑에서만 보임 -->
-        <button
-          v-if="isLargeScreen"
-          @click="toggleHistory"
-          class="toggle-history-btn absolute bg-white rounded-full shadow-md p-1 hover:bg-primary/5 transition-colors z-20"
-          :style="{ left: isHistoryCollapsed ? '0' : '16rem', top: '2.5rem' }"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke-width="1.5" 
-            stroke="currentColor" 
-            class="w-4 h-4 transform transition-transform"
-            :class="{ 'rotate-180': isHistoryCollapsed }"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-
+    <main class="container mx-auto px-8 pt-8 pb-8">
+      <div class="flex flex-row justify-center items-start gap-2 relative">
         <!-- 히스토리 패널 -->
         <div 
+          v-show="!isHistoryCollapsed"
           class="history-panel bg-white rounded-lg shadow-sm p-4 h-[calc(100vh-11rem)] overflow-y-auto transition-all duration-300 ease-in-out relative"
-          :class="{
-            'w-64 opacity-100 pointer-events-auto': !isHistoryCollapsed && isLargeScreen,
-            'w-0 opacity-0 pointer-events-none': isHistoryCollapsed && isLargeScreen,
-            'hidden': !showMobileHistory && !isLargeScreen
-          }"
+          style="width: 200px; min-width: 120px;"
         >
+          <button
+            @click="toggleHistory"
+            class="absolute top-4 left-2 bg-primary text-white rounded-full p-2 shadow-md hover:bg-primary/90 transition-colors z-20"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="white"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14 8l-4 4 4 4" />
+            </svg>
+          </button>
           <div v-show="!isHistoryCollapsed">
-            <h2 class="text-lg font-bold text-primary mb-4">채팅 히스토리</h2>
             <div class="space-y-2">
+              <button
+                @click="startNewChat"
+                class="w-full text-left p-2 rounded bg-primary text-white hover:bg-primary/90 transition-colors font-semibold mb-2 ml-8"
+              >
+                + 새로운 채팅
+              </button>
               <button 
                 v-for="(chat, index) in chatHistory" 
                 :key="chat.id"
@@ -69,19 +46,39 @@
           </div>
         </div>
 
+        <!-- 히스토리 토글 버튼 (버블 버튼) -->
+        <button
+          v-show="isHistoryCollapsed"
+          @click="toggleHistory"
+          class="absolute top-4 left-4 bg-primary text-white rounded-full p-3 shadow-md hover:bg-primary/90 transition-colors z-10"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+
         <!-- 채팅 섹션 -->
         <div 
-          class="transition-all duration-300"
-          :class="{
-            'lg:col-span-5': !isHistoryCollapsed && isLargeScreen,
-            'lg:col-span-7': isHistoryCollapsed && isLargeScreen,
-            'lg:ml-0': !isHistoryCollapsed || !isLargeScreen,
-            'lg:ml-8': isHistoryCollapsed && isLargeScreen
-          }"
+          class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] flex flex-col transition-all duration-300"
+          style="width: 400px; min-width: 250px;"
         >
-          <div class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] flex flex-col">
-            <!-- 채팅 메시지 영역 -->
-            <div class="flex-1 overflow-y-auto mb-4 space-y-4" ref="chatContainer">
+          <!-- 채팅 메시지 영역 -->
+          <div class="flex-1 overflow-y-auto mb-4 space-y-4" ref="chatContainer">
+            <template v-if="messages.length === 0">
+              <div class="flex flex-col items-center justify-center h-full text-center text-secondary/80 py-12">
+                <div class="text-lg font-semibold mb-2">AI 투자분석 챗봇</div>
+                <div class="mb-2">분석이 필요한 종목을 입력하거나, 종목 추천을 받아보세요.</div>
+                <div class="text-xs text-secondary">예시: "삼성전자 분석해줘", "2025년 유망한 종목 추천해줘"</div>
+              </div>
+            </template>
+            <template v-else>
               <div v-for="(message, index) in messages" :key="index" 
                 :class="['flex items-start space-x-4', message.isUser ? 'justify-end' : '']">
                 <template v-if="!message.isUser">
@@ -105,46 +102,76 @@
                   </div>
                 </template>
               </div>
-            </div>
+            </template>
+          </div>
 
-            <!-- 입력 영역 -->
-            <div class="border-t border-gray-200 pt-4">
-              <div class="flex space-x-4">
-                <input
-                  type="text"
-                  v-model="userInput"
-                  placeholder="분석하고 싶은 종목을 입력하세요..."
-                  class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  @keyup.enter="sendMessage"
-                />
-                <button
-                  @click="sendMessage"
-                  class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  전송
-                </button>
-              </div>
+          <!-- 입력 영역 -->
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex space-x-4">
+              <input
+                type="text"
+                v-model="userInput"
+                placeholder="분석하고 싶은 종목을 입력하세요..."
+                class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                @keyup.enter="sendMessage"
+              />
+              <button
+                @click="sendMessage"
+                class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                전송
+              </button>
             </div>
           </div>
         </div>
 
         <!-- 분석 결과 섹션 -->
         <div 
-          class="lg:col-span-5 transition-all duration-300"
-          :class="{ 'lg:col-span-6': isHistoryCollapsed && isLargeScreen }"
+          class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] overflow-y-auto transition-all duration-300"
+          style="width: 450px; min-width: 250px;"
         >
-          <div class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] overflow-y-auto">
-            <!-- 분석 결과 등 추가 컨텐츠는 필요시 여기에 렌더링 -->
-          </div>
+          <template v-if="messages.length === 0">
+            <div class="text-secondary/80 text-center py-12">
+              <div class="text-lg font-semibold mb-2">분석 결과 안내</div>
+              <div>아직 분석 결과가 없습니다.<br>종목을 입력하거나 추천을 받아보세요.</div>
+            </div>
+          </template>
+          <template v-else-if="analysisResult && analysisResult.content_type === 'table' && analysisResult.structured_data">
+            <table class="w-full text-sm border">
+              <thead>
+                <tr>
+                  <th v-for="(v, k) in analysisResult.structured_data[0]" :key="k" class="border px-2 py-1">{{ k }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, idx) in analysisResult.structured_data" :key="idx">
+                  <td v-for="(v, k) in row" :key="k" class="border px-2 py-1">{{ v }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="mt-4 text-secondary">{{ analysisResult.text }}</div>
+          </template>
+          <template v-else-if="analysisResult && analysisResult.content_type === 'chart' && analysisResult.structured_data">
+            <!-- 차트 라이브러리 연동 필요: 예시 placeholder -->
+            <div class="text-center text-primary">[차트 시각화 영역]</div>
+          </template>
+          <template v-else-if="analysisResult && analysisResult.content_type === 'text'">
+            <div class="text-secondary">{{ analysisResult.text }}</div>
+          </template>
+          <template v-else>
+            <div class="text-secondary">아직 분석 결과가 없습니다.</div>
+          </template>
         </div>
       </div>
     </main>
   </div>
 </template>
 
+
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 import { chatService } from '../services/api'
+
 
 const userInput = ref('')
 const chatContainer = ref(null)
@@ -159,6 +186,15 @@ const isHistoryCollapsed = ref(false)
 
 const chatHistory = ref([])
 const messages = ref([])
+const analysisResult = ref(null)
+
+// 새 채팅 시작: 모든 상태 초기화
+const startNewChat = () => {
+  selectedChat.value = null
+  messages.value = []
+  analysisResult.value = null
+  userInput.value = ''
+}
 
 // 화면 크기 변경 감지
 const handleResize = () => {
@@ -191,6 +227,11 @@ onBeforeUnmount(() => {
 const sendMessage = async () => {
   if (!userInput.value.trim()) return
 
+  // 만약 이전에 히스토리에서 불러온 채팅이라면 새 채팅으로 전환
+  if (selectedChat.value) {
+    startNewChat()
+  }
+
   // 사용자 메시지 추가
   const userMessage = {
     content: userInput.value,
@@ -201,11 +242,19 @@ const sendMessage = async () => {
   try {
     // 실제 백엔드에 메시지 전송
     const response = await chatService.sendMessage(userInput.value)
-    const aiResponse = {
-      content: response.response,
-      isUser: false
+    let aiResponse = response.response
+    let parsed = {}
+    try {
+      parsed = typeof aiResponse === 'string' ? JSON.parse(aiResponse) : aiResponse
+    } catch (e) {
+      parsed = { content_type: 'text', text: aiResponse }
     }
-    messages.value.push(aiResponse)
+    messages.value.push({
+      content: parsed.text || aiResponse,
+      isUser: false
+    })
+    // 분석 결과 영역에 구조화 데이터 바인딩
+    analysisResult.value = parsed
   } catch (error) {
     console.error('Failed to send message:', error)
     const errorMessage = {
@@ -213,6 +262,7 @@ const sendMessage = async () => {
       isUser: false
     }
     messages.value.push(errorMessage)
+    analysisResult.value = null
   }
 
   userInput.value = ''
@@ -230,6 +280,14 @@ const loadChat = (chat) => {
   selectedChat.value = chat
   // 실제로는 chat.id로 백엔드에서 해당 채팅의 메시지 목록을 불러올 수도 있음
   messages.value = chat.messages || []
+  // 분석 결과도 복원 (구조화 응답 파싱)
+  let parsed = {}
+  try {
+    parsed = typeof chat.messages[1]?.content === 'string' ? JSON.parse(chat.messages[1].content) : chat.messages[1]?.content
+  } catch (e) {
+    parsed = { content_type: 'text', text: chat.messages[1]?.content }
+  }
+  analysisResult.value = parsed
 }
 
 const loadChatHistory = async () => {
@@ -250,13 +308,36 @@ const loadChatHistory = async () => {
         }
       ]
     }))
-    if (chatHistory.value.length > 0) {
+    // 세션 복원: localStorage에 마지막 선택된 채팅 id가 있으면 해당 채팅 불러오기
+    const lastChatId = localStorage.getItem('lastSelectedChatId')
+    if (lastChatId && chatHistory.value.some(c => c.id == lastChatId)) {
+      loadChat(chatHistory.value.find(c => c.id == lastChatId))
+    } else if (chatHistory.value.length > 0) {
       loadChat(chatHistory.value[0])
+    } else {
+      // 히스토리가 없으면 초기화
+      startNewChat()
     }
   } catch (error) {
     console.error('Failed to load chat history:', error)
+    startNewChat()
   }
 }
+
+// 메뉴 이동/새로고침 시 세션 복원
+onMounted(async () => {
+  window.addEventListener('resize', handleResize)
+  await loadChatHistory()
+})
+
+// 채팅 선택 시 localStorage에 저장
+watch(selectedChat, (val) => {
+  if (val && val.id) {
+    localStorage.setItem('lastSelectedChatId', val.id)
+  } else {
+    localStorage.removeItem('lastSelectedChatId')
+  }
+})
 </script>
 
 <style scoped>
@@ -320,13 +401,8 @@ header {
   right: -0.75rem;
 }
 
-/* 히스토리가 접혔을 때의 여백 조정 */
-.lg\:ml-8 {
-  margin-left: 2rem;
-}
-
 .toggle-history-btn {
   transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
   z-index: 20;
 }
-</style> 
+</style>
