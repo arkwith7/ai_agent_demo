@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     DB_NAME: str | None = None
     # 논문 특허 API
     DBPIA_API_KEY: str | None = None
+    STOCK_API_KEY: str | None = None
 
     class Config:
         env_file = "./.env"
