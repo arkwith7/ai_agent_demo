@@ -168,7 +168,7 @@ const handleLogin = async () => {
     await authService.login(email.value, password.value)
     emitter.emit('auth-change')
     const redirect = route.query.redirect || '/'
-    window.location.href = redirect
+    router.push(redirect)
   } catch (error) {
     console.error('Login error:', error)
     error.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'

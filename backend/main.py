@@ -1,37 +1,32 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from api.routers.auth import router as auth_router
-from api.routers.ai_service import router as ai_service_router
-from api.routers.user_management import router as user_management_router
+from routers import analysis, chat, auth
 from db.init_db import init_models
 
 app = FastAPI(
-    title="AI Agent Backend",
-    description="LangChain + Azure OpenAI 기반 AI Agent 서비스. JWT 인증 및 Swagger 문서화 지원.",
-    version="1.0.0",
-    contact={
-        "name": "AI Agent Demo Team",
-        "email": "admin@example.com",
-    },
+    title="AI Stock Analysis API",
+    description="AI 기반 주식 분석 API",
+    version="1.0.0"
 )
 
-# CORS 허용 (프론트엔드와 연동 시 필요)
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 개발 환경에서는 모든 origin 허용
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(ai_service_router, prefix="/ai", tags=["ai"])
+# 라우터 등록
+app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
-# 멀티턴 대화 지원 라우터 추가
-from api.routers.chat_message import router as chat_message_router
-app.include_router(chat_message_router, prefix="/ai/chat", tags=["chat"])
-app.include_router(user_management_router, prefix="/admin", tags=["user-management"])
+@app.get("/")
+async def root():
+    return {"message": "Stock Analysis API"}
 
 # Database initialization on startup
 @app.on_event("startup")
@@ -63,3 +58,7 @@ def custom_openapi():
     return app.openapi_schema
 
 app.openapi = custom_openapi
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

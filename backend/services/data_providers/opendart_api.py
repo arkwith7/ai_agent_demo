@@ -3,15 +3,14 @@ OpenDART (금융감독원 전자공시시스템) 데이터 제공자
 - 기업 재무제표, 사업보고서 등 공시 정보
 - ESG 관련 정보, 지배구조 데이터
 """
-import aiohttp
-import asyncio
+import httpx
 import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
-import os
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import random
+from core.config import settings
+from services.logger import LoggerService
 
 logger = logging.getLogger(__name__)
 
@@ -44,49 +43,129 @@ class OpenDARTProvider:
     """OpenDART 데이터 제공자"""
     
     def __init__(self):
-        self.api_key = os.getenv("OPEN_DART_API_KEY", "")
-        print(f"[DEBUG] OpenDARTProvider __init__: api_key={self.api_key}")
+        self.api_key = settings.OPEN_DART_API_KEY
+        self.logger = LoggerService()
         self.base_url = "https://opendart.fss.or.kr/api"
-        self.session: Optional[aiohttp.ClientSession] = None
         
         # Mock 데이터 사용 여부
         self.use_mock_data = not self.api_key or len(self.api_key) < 20
-        print(f"[DEBUG] OpenDARTProvider __init__: use_mock_data={self.use_mock_data}")
-        
         if self.use_mock_data:
-            logger.warning("OpenDART API 키가 설정되지 않아 Mock 데이터를 사용합니다.")
+            self.logger.warning("OpenDART API 키가 설정되지 않아 Mock 데이터를 사용합니다.")
     
-    async def __aenter__(self):
-        """비동기 컨텍스트 매니저 진입"""
-        self.session = aiohttp.ClientSession()
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """비동기 컨텍스트 매니저 종료"""
-        if self.session:
-            await self.session.close()
-    
-    async def get_company_info(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """기업 기본 정보 조회"""
+    async def get_company_info(self, corp_code: str) -> Dict[str, Any]:
+        """
+        기업 기본 정보를 조회합니다.
+        """
         if self.use_mock_data:
-            return self._get_mock_company_info(symbol)
-        
+            return self._get_mock_company_info(corp_code)
+            
         try:
+            url = f"{self.base_url}/company.json"
             params = {
                 "crtfc_key": self.api_key,
-                "corp_code": await self._get_corp_code(symbol)
+                "corp_code": corp_code
             }
-            
-            async with self.session.get(f"{self.base_url}/company.json", params=params) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return self._parse_company_info(data)
-                else:
-                    return self._get_mock_company_info(symbol)
-        
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
         except Exception as e:
-            logger.error(f"기업 정보 조회 오류 ({symbol}): {e}")
-            return self._get_mock_company_info(symbol)
+            self.logger.error(f"Error getting company info: {str(e)}")
+            return self._get_mock_company_info(corp_code)
+    
+    async def get_financial_statement(self, corp_code: str, year: Optional[int] = None) -> Dict[str, Any]:
+        """
+        재무제표 정보를 조회합니다.
+        """
+        if self.use_mock_data:
+            return self._get_mock_financial_statements(corp_code, 1)[0].__dict__
+            
+        try:
+            if year is None:
+                year = datetime.now().year
+
+            url = f"{self.base_url}/fnlttSinglAcnt.json"
+            params = {
+                "crtfc_key": self.api_key,
+                "corp_code": corp_code,
+                "bsns_year": str(year),
+                "reprt_code": "11011"  # 1분기보고서
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
+        except Exception as e:
+            self.logger.error(f"Error getting financial statement: {str(e)}")
+            return self._get_mock_financial_statements(corp_code, 1)[0].__dict__
+    
+    async def get_corp_code(self, stock_code: str) -> Optional[str]:
+        """
+        종목코드로 기업 고유번호를 조회합니다.
+        """
+        if self.use_mock_data:
+            return stock_code
+            
+        try:
+            url = f"{self.base_url}/corpCode.xml"
+            params = {
+                "crtfc_key": self.api_key
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                # XML 파싱 로직 구현 필요
+                return stock_code
+        except Exception as e:
+            self.logger.error(f"Error getting corp code: {str(e)}")
+            return stock_code
+    
+    async def get_major_shareholders(self, corp_code: str) -> Dict[str, Any]:
+        """
+        주요 주주 정보를 조회합니다.
+        """
+        if self.use_mock_data:
+            return self._get_mock_governance_info(corp_code)
+            
+        try:
+            url = f"{self.base_url}/elestock.json"
+            params = {
+                "crtfc_key": self.api_key,
+                "corp_code": corp_code
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
+        except Exception as e:
+            self.logger.error(f"Error getting major shareholders: {str(e)}")
+            return self._get_mock_governance_info(corp_code)
+    
+    async def get_executive_info(self, corp_code: str) -> Dict[str, Any]:
+        """
+        임원 정보를 조회합니다.
+        """
+        if self.use_mock_data:
+            return self._get_mock_governance_info(corp_code)
+            
+        try:
+            url = f"{self.base_url}/empSttus.json"
+            params = {
+                "crtfc_key": self.api_key,
+                "corp_code": corp_code
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
+        except Exception as e:
+            self.logger.error(f"Error getting executive info: {str(e)}")
+            return self._get_mock_governance_info(corp_code)
     
     async def get_financial_statements(self, symbol: str, years: int = 3) -> List[FinancialStatement]:
         """재무제표 조회 (최근 N년)"""
@@ -94,7 +173,7 @@ class OpenDARTProvider:
             return self._get_mock_financial_statements(symbol, years)
         
         try:
-            corp_code = await self._get_corp_code(symbol)
+            corp_code = await self.get_corp_code(symbol)
             statements = []
             
             for year in range(datetime.now().year - years, datetime.now().year):
@@ -105,9 +184,10 @@ class OpenDARTProvider:
                     "reprt_code": "11011"  # 사업보고서
                 }
                 
-                async with self.session.get(f"{self.base_url}/fnlttSinglAcnt.json", params=params) as response:
-                    if response.status == 200:
-                        data = await response.json()
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(f"{self.base_url}/fnlttSinglAcnt.json", params=params)
+                    if response.status_code == 200:
+                        data = response.json()
                         statement = self._parse_financial_statement(data, symbol, year)
                         if statement:
                             statements.append(statement)
@@ -115,7 +195,7 @@ class OpenDARTProvider:
             return statements if statements else self._get_mock_financial_statements(symbol, years)
         
         except Exception as e:
-            logger.error(f"재무제표 조회 오류 ({symbol}): {e}")
+            self.logger.error(f"재무제표 조회 오류 ({symbol}): {e}")
             return self._get_mock_financial_statements(symbol, years)
     
     async def get_esg_info(self, symbol: str) -> Optional[ESGInfo]:
@@ -124,8 +204,7 @@ class OpenDARTProvider:
             return self._get_mock_esg_info(symbol)
         
         try:
-            # OpenDART ESG 관련 공시 조회
-            corp_code = await self._get_corp_code(symbol)
+            corp_code = await self.get_corp_code(symbol)
             params = {
                 "crtfc_key": self.api_key,
                 "corp_code": corp_code,
@@ -135,15 +214,16 @@ class OpenDARTProvider:
                 "page_count": "100"
             }
             
-            async with self.session.get(f"{self.base_url}/list.json", params=params) as response:
-                if response.status == 200:
-                    data = await response.json()
+            async with httpx.AsyncClient() as client:
+                response = await client.get(f"{self.base_url}/list.json", params=params)
+                if response.status_code == 200:
+                    data = response.json()
                     return self._analyze_esg_from_disclosures(data, symbol)
                 else:
                     return self._get_mock_esg_info(symbol)
         
         except Exception as e:
-            logger.error(f"ESG 정보 조회 오류 ({symbol}): {e}")
+            self.logger.error(f"ESG 정보 조회 오류 ({symbol}): {e}")
             return self._get_mock_esg_info(symbol)
     
     async def get_governance_info(self, symbol: str) -> Dict[str, Any]:
@@ -152,36 +232,24 @@ class OpenDARTProvider:
             return self._get_mock_governance_info(symbol)
         
         try:
-            corp_code = await self._get_corp_code(symbol)
+            corp_code = await self.get_corp_code(symbol)
             params = {
                 "crtfc_key": self.api_key,
                 "corp_code": corp_code,
                 "bsns_year": str(datetime.now().year - 1)
             }
             
-            # 임원 현황
-            async with self.session.get(f"{self.base_url}/empSttus.json", params=params) as response:
-                if response.status == 200:
-                    emp_data = await response.json()
+            async with httpx.AsyncClient() as client:
+                response = await client.get(f"{self.base_url}/empSttus.json", params=params)
+                if response.status_code == 200:
+                    emp_data = response.json()
                     return self._parse_governance_info(emp_data)
                 else:
                     return self._get_mock_governance_info(symbol)
         
         except Exception as e:
-            logger.error(f"지배구조 정보 조회 오류 ({symbol}): {e}")
+            self.logger.error(f"지배구조 정보 조회 오류 ({symbol}): {e}")
             return self._get_mock_governance_info(symbol)
-    
-    async def _get_corp_code(self, symbol: str) -> str:
-        """종목코드로 기업고유번호 조회"""
-        # 실제로는 OpenDART의 corp_code를 조회해야 함
-        # 현재는 종목코드를 그대로 사용
-        corp_code_mapping = {
-            "005930": "00126380",  # 삼성전자
-            "000660": "00164779",  # SK하이닉스
-            "035420": "00401731",  # NAVER
-            # 기타 매핑...
-        }
-        return corp_code_mapping.get(symbol, symbol)
     
     def _get_mock_company_info(self, symbol: str) -> Dict[str, Any]:
         """Mock 기업 정보"""
@@ -300,11 +368,6 @@ class OpenDARTProvider:
             "ceo_duality": random.choice([True, False])  # CEO와 회장 겸임 여부
         }
     
-    def _parse_company_info(self, data: Dict) -> Dict[str, Any]:
-        """실제 API 응답 파싱"""
-        # 실제 OpenDART API 응답 구조에 맞게 파싱
-        return data
-    
     def _parse_financial_statement(self, data: Dict, symbol: str, year: int) -> Optional[FinancialStatement]:
         """재무제표 데이터 파싱"""
         # 실제 API 응답 파싱 로직
@@ -319,6 +382,109 @@ class OpenDARTProvider:
         """지배구조 정보 파싱"""
         # 실제 API 응답 파싱
         return {}
+
+    async def get_company_financials(self, stock_code: str) -> Dict[str, Any]:
+        """
+        기업의 재무제표 데이터를 조회합니다.
+        """
+        if self.use_mock_data:
+            return self._get_mock_financial_data(stock_code)
+
+        try:
+            async with httpx.AsyncClient() as client:
+                # 1. 기업 기본 정보 조회
+                company_info = await self.get_company_info(stock_code)
+                
+                # 2. 재무제표 데이터 조회
+                financial_data = await self.get_financial_statement(stock_code)
+                
+                # 3. 배당 정보 조회
+                dividend_data = await self._get_dividend_info(client, stock_code)
+                
+                return {
+                    "company_info": company_info,
+                    "financial_data": financial_data,
+                    "dividend_data": dividend_data
+                }
+        except Exception as e:
+            self.logger.error(f"OpenDART API 호출 중 오류 발생: {str(e)}")
+            return self._get_mock_financial_data(stock_code)
+
+    async def _get_dividend_info(self, client: httpx.AsyncClient, stock_code: str) -> Dict[str, Any]:
+        """배당 정보 조회"""
+        url = f"{self.base_url}/alotMatter.json"
+        params = {
+            "crtfc_key": self.api_key,
+            "corp_code": stock_code
+        }
+        
+        response = await client.get(url, params=params)
+        if response.status_code != 200:
+            raise Exception(f"배당 정보 조회 실패: {response.status_code}")
+        data = response.json()
+        return data.get("list", [])
+
+    def _get_mock_financial_data(self, stock_code: str) -> Dict[str, Any]:
+        """Mock 재무 데이터 반환"""
+        current_year = datetime.now().year
+        mock_financial_data = {}
+        
+        # 최근 3년간의 Mock 재무제표 데이터 생성
+        for year in range(current_year - 2, current_year + 1):
+            for quarter in range(1, 5):
+                mock_financial_data[f"{year}_Q{quarter}"] = [
+                    {
+                        "rcept_no": f"{year}0000000",
+                        "reprt_code": f"1{quarter:03d}",
+                        "bsns_year": str(year),
+                        "corp_code": stock_code,
+                        "sj_div": "BS",
+                        "sj_nm": "재무상태표",
+                        "account_id": "ifrs-full_Equity",
+                        "account_nm": "자본",
+                        "account_detail": "-",
+                        "thstrm_nm": "제 1 기",
+                        "thstrm_amount": str(100000000000 + (year - current_year + 2) * 10000000000),
+                        "frmtrm_nm": "제 2 기",
+                        "frmtrm_amount": str(90000000000 + (year - current_year + 2) * 10000000000)
+                    }
+                ]
+        
+        return {
+            "company_info": {
+                "corp_code": stock_code,
+                "corp_name": "테스트 기업",
+                "stock_code": stock_code,
+                "corp_cls": "Y",
+                "jurir_no": "1234567890123",
+                "bizr_no": "1234567890",
+                "adres": "서울특별시 강남구",
+                "hm_url": "http://www.test.com",
+                "ir_url": "http://www.test.com/ir",
+                "phn_no": "02-1234-5678",
+                "fax_no": "02-1234-5679",
+                "induty_code": "C26",
+                "est_dt": "19800101",
+                "acc_mt": "12"
+            },
+            "financial_data": mock_financial_data,
+            "dividend_data": [
+                {
+                    "rcept_no": f"{current_year}0000000",
+                    "corp_cls": "Y",
+                    "corp_code": stock_code,
+                    "corp_name": "테스트 기업",
+                    "se": "주주총회",
+                    "stock_knd": "보통주",
+                    "thdt": f"{current_year}1231",
+                    "stk_parprc": "5000",
+                    "stk_qty": "1000000",
+                    "stk_dvdd_rt": "3.0",
+                    "stk_dvdd_pric": "150",
+                    "pay_dt": f"{current_year}0401"
+                }
+            ]
+        }
 
 # 싱글톤 인스턴스
 opendart_provider = OpenDARTProvider()

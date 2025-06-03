@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from schemas.user import UserRead
 from api import deps
 from services import azure_openai_service
@@ -10,8 +10,11 @@ from fastapi import BackgroundTasks
 from core.config import settings
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
+from schemas.chat import ChatMessage, ChatResponse, MessageType
+from core.agent import StockAnalysisAgent
+from services.stock_analysis import StockAnalysisService
 
-router = APIRouter()
+router = APIRouter(tags=["AI 서비스"])
 
 # Enhanced Warren Buffett Analysis Request Schema
 class BuffettAnalysisRequest(BaseModel):
@@ -37,31 +40,79 @@ class BuffettAnalysisResponse(BaseModel):
 class ChatRequest(BaseModel):
     query: str
 
-@router.post("/chat")
-async def chat_with_ai(
-    request: ChatRequest,
-    background_tasks: BackgroundTasks,
+@router.post("/chat", response_model=ChatResponse)
+async def process_chat(
+    message: ChatMessage,
     current_user: UserRead = Depends(deps.get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
-    ai_response, input_tokens, output_tokens = await azure_openai_service.get_ai_response(request.query)
-    background_tasks.add_task(
-        crud_query_history.create_query_log,
-        db=db,
-        user_id=current_user.id,
-        query_text=request.query,
-        response_text=ai_response,
-        ai_model_name=settings.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
-    )
-    background_tasks.add_task(
-        crud_token_usage_log.create_token_usage_log,
-        db=db,
-        user_id=current_user.id,
-        ai_model_name=settings.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME,
-        input_tokens=input_tokens,
-        output_tokens=output_tokens
-    )
-    return {"response": ai_response}
+    """
+    채팅 메시지를 처리하고 적절한 응답을 반환합니다.
+    """
+    try:
+        # 1. AI Agent 초기화
+        agent = StockAnalysisAgent()
+        analysis_service = StockAnalysisService(agent)
+        
+        # 2. 메시지 타입에 따른 처리
+        if message.message_type == MessageType.STOCK_RECOMMENDATION:
+            # 2-1. 종목 추천 요청 처리
+            recommendations = await analysis_service.get_recommendations(message.content)
+            
+            # 2-2. 쿼리 로그 기록
+            await crud_query_history.create_query_log(
+                db=db,
+                user_id=current_user.id,
+                query_text=message.content,
+                response_text=str(recommendations),
+                ai_model_name="Stock Analysis AI Agent"
+            )
+            
+            return ChatResponse(
+                message_type=MessageType.STOCK_RECOMMENDATION,
+                content="종목 추천 결과입니다.",
+                analysis_result=recommendations
+            )
+            
+        elif message.message_type == MessageType.STOCK_ANALYSIS:
+            # 2-1. 종목 상세 분석 요청 처리
+            analysis = await analysis_service.get_detailed_analysis(message.content)
+            
+            # 2-2. 쿼리 로그 기록
+            await crud_query_history.create_query_log(
+                db=db,
+                user_id=current_user.id,
+                query_text=message.content,
+                response_text=str(analysis),
+                ai_model_name="Stock Analysis AI Agent"
+            )
+            
+            return ChatResponse(
+                message_type=MessageType.STOCK_ANALYSIS,
+                content="종목 상세 분석 결과입니다.",
+                analysis_result=analysis
+            )
+            
+        else:
+            # 2-1. 일반 채팅 처리
+            response = await process_query(message.content)
+            
+            # 2-2. 쿼리 로그 기록
+            await crud_query_history.create_query_log(
+                db=db,
+                user_id=current_user.id,
+                query_text=message.content,
+                response_text=str(response),
+                ai_model_name="General AI Agent"
+            )
+            
+            return ChatResponse(
+                message_type=MessageType.GENERAL_CHAT,
+                content=response
+            )
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/warren-buffett-analysis", response_model=BuffettAnalysisResponse)
 async def enhanced_warren_buffett_analysis(
@@ -217,23 +268,15 @@ async def get_chat_history(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    현재 로그인한 사용자의 채팅 히스토리 반환 (페이징)
+    사용자의 채팅 기록을 조회합니다.
     """
-    skip = (page - 1) * size
-    histories, total = await crud_query_history.get_user_chat_history(
-        db=db,
-        user_id=current_user.id,
-        skip=skip,
-        limit=size
-    )
-    # 필요한 필드만 반환 (예시)
-    result = [
-        {
-            "id": h.id,
-            "query_text": h.query_text,
-            "response_text": h.response_text,
-            "created_at": h.created_at
-        }
-        for h in histories
-    ]
-    return {"histories": result, "total": total}
+    try:
+        history = await crud_query_history.get_user_query_history(
+            db=db,
+            user_id=current_user.id,
+            page=page,
+            size=size
+        )
+        return history
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

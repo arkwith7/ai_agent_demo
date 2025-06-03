@@ -9,7 +9,6 @@ import asyncio
 import logging
 import random
 
-from .data_providers.krx_api import krx_provider
 from .data_providers.opendart_api import opendart_provider
 from .esg_analysis_tool import esg_analyzer
 from .advanced_analysis_tool import advanced_analyzer

@@ -1,6 +1,28 @@
 <template>
   <div class="min-h-screen bg-light">
     <main class="container mx-auto px-8 pt-8 pb-8">
+      <!-- 데이터 수집 섹션 추가 -->
+      <div class="mb-6 bg-white rounded-lg shadow-sm p-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">시장 데이터</h2>
+          <div class="flex items-center space-x-4">
+            <span v-if="collectionStatus" :class="[
+              'text-sm',
+              collectionStatus.success ? 'text-green-600' : 'text-red-600'
+            ]">
+              {{ collectionStatus.message }}
+            </span>
+            <button
+              @click="collectMarketData"
+              :disabled="isCollecting"
+              class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {{ isCollecting ? '수집 중...' : '시장 데이터 수집' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex flex-row justify-center items-start gap-2 relative">
         <!-- 히스토리 패널 -->
         <div 
@@ -8,30 +30,26 @@
           class="history-panel bg-white rounded-lg shadow-sm p-4 h-[calc(100vh-11rem)] overflow-y-auto transition-all duration-300 ease-in-out relative"
           style="width: 200px; min-width: 120px;"
         >
-          <button
-            @click="toggleHistory"
-            class="absolute top-4 left-2 bg-primary text-white rounded-full p-2 shadow-md hover:bg-primary/90 transition-colors z-20"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-5 h-5"
+          <div class="flex items-center space-x-2 mb-2">
+            <button
+              @click="toggleHistory"
+              class="bg-primary text-white rounded-full p-3 shadow-md hover:bg-primary/90 transition-colors z-20"
+              style="position: static;"
             >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="white"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14 8l-4 4 4 4" />
-            </svg>
-          </button>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button
+              @click="startNewChat"
+              class="text-left px-3 py-1 rounded bg-primary text-white hover:bg-primary/90 transition-colors font-medium text-xs"
+              style="min-width: 90px;"
+            >
+              + New chat
+            </button>
+          </div>
           <div v-show="!isHistoryCollapsed">
             <div class="space-y-2">
-              <button
-                @click="startNewChat"
-                class="w-full text-left p-2 rounded bg-primary text-white hover:bg-primary/90 transition-colors font-semibold mb-2 ml-8"
-              >
-                + 새로운 채팅
-              </button>
               <button 
                 v-for="(chat, index) in chatHistory" 
                 :key="chat.id"
@@ -63,6 +81,126 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" />
           </svg>
         </button>
+
+        <!-- 분석 결과 섹션 -->
+        <div 
+          class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] overflow-y-auto transition-all duration-300"
+          style="width: 450px; min-width: 250px;"
+        >
+          <template v-if="isLoading">
+            <div class="flex flex-col items-center justify-center h-full">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p class="mt-4 text-secondary">분석 중입니다...</p>
+              <p class="text-sm text-secondary mt-2">잠시만 기다려주세요.</p>
+            </div>
+          </template>
+          
+          <template v-else-if="error">
+            <div class="text-red-500 p-4 rounded-lg bg-red-50">
+              <p class="font-semibold">오류가 발생했습니다</p>
+              <p class="text-sm mt-2">{{ error }}</p>
+              <button 
+                @click="retryAnalysis" 
+                class="mt-4 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+              >
+                다시 시도
+              </button>
+            </div>
+          </template>
+          
+          <template v-else-if="analysisResult">
+            <!-- 종목 추천 결과 -->
+            <template v-if="analysisResult.message_type === 'stock_recommendation'">
+              <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                  <h2 class="text-xl font-semibold">추천 종목</h2>
+                  <span class="text-sm text-secondary">총 {{ analysisResult.analysis_result.length }}개</span>
+                </div>
+                
+                <div class="space-y-4">
+                  <div v-for="(stock, index) in displayedRecommendations" :key="index" 
+                       class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 class="text-lg font-semibold">{{ stock.name }}</h3>
+                        <span :class="[
+                          'inline-block px-2 py-1 rounded text-xs font-medium',
+                          stock.market === 'KOSPI' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                        ]">
+                          {{ stock.market }}
+                        </span>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-lg font-semibold">{{ formatNumber(stock.currentPrice) }}원</p>
+                        <p :class="[
+                          'text-sm',
+                          stock.changeRate > 0 ? 'text-red-500' : stock.changeRate < 0 ? 'text-blue-500' : 'text-gray-500'
+                        ]">
+                          {{ stock.changeRate > 0 ? '+' : '' }}{{ formatNumber(stock.changeRate) }}%
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                      <div>
+                        <p class="text-secondary">거래량</p>
+                        <p class="font-medium">{{ formatNumber(stock.volume) }}</p>
+                      </div>
+                      <div>
+                        <p class="text-secondary">시가총액</p>
+                        <p class="font-medium">{{ formatNumber(stock.marketCap) }}원</p>
+                      </div>
+                    </div>
+                    
+                    <div class="border-t pt-3">
+                      <p class="text-sm text-secondary">추천 이유</p>
+                      <p class="text-sm">{{ stock.reason }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div v-if="analysisResult.analysis_result.length > 10" 
+                     class="flex justify-center items-center space-x-4 mt-4">
+                  <button 
+                    @click="currentPage--" 
+                    :disabled="currentPage === 1"
+                    class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  <span class="text-sm text-secondary">
+                    {{ currentPage }} / {{ totalPages }}
+                  </span>
+                  <button 
+                    @click="currentPage++" 
+                    :disabled="currentPage === totalPages"
+                    class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+            </template>
+            
+            <!-- 종목 상세 분석 결과 -->
+            <template v-else-if="analysisResult.message_type === 'stock_analysis'">
+              <StockAnalysisResult
+                :analysis="analysisResult.analysis_result"
+                :show-esg="showESGAnalysis"
+                :show-risk="showRiskAnalysis"
+                @back="backToRecommendations"
+              />
+            </template>
+          </template>
+          
+          <template v-else>
+            <div class="text-secondary/80 text-center py-12">
+              <div class="text-lg font-semibold mb-2">분석 결과 안내</div>
+              <div>아직 분석 결과가 없습니다.<br>종목을 입력하거나 추천을 받아보세요.</div>
+            </div>
+          </template>
+        </div>
 
         <!-- 채팅 섹션 -->
         <div 
@@ -117,61 +255,27 @@
               />
               <button
                 @click="sendMessage"
-                class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
               >
-                전송
+                <!-- Paper Airplane 아이콘 -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
               </button>
             </div>
           </div>
-        </div>
-
-        <!-- 분석 결과 섹션 -->
-        <div 
-          class="bg-white rounded-lg shadow-sm p-6 h-[calc(100vh-11rem)] overflow-y-auto transition-all duration-300"
-          style="width: 450px; min-width: 250px;"
-        >
-          <template v-if="messages.length === 0">
-            <div class="text-secondary/80 text-center py-12">
-              <div class="text-lg font-semibold mb-2">분석 결과 안내</div>
-              <div>아직 분석 결과가 없습니다.<br>종목을 입력하거나 추천을 받아보세요.</div>
-            </div>
-          </template>
-          <template v-else-if="analysisResult && analysisResult.content_type === 'table' && analysisResult.structured_data">
-            <table class="w-full text-sm border">
-              <thead>
-                <tr>
-                  <th v-for="(v, k) in analysisResult.structured_data[0]" :key="k" class="border px-2 py-1">{{ k }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(row, idx) in analysisResult.structured_data" :key="idx">
-                  <td v-for="(v, k) in row" :key="k" class="border px-2 py-1">{{ v }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="mt-4 text-secondary">{{ analysisResult.text }}</div>
-          </template>
-          <template v-else-if="analysisResult && analysisResult.content_type === 'chart' && analysisResult.structured_data">
-            <!-- 차트 라이브러리 연동 필요: 예시 placeholder -->
-            <div class="text-center text-primary">[차트 시각화 영역]</div>
-          </template>
-          <template v-else-if="analysisResult && analysisResult.content_type === 'text'">
-            <div class="text-secondary">{{ analysisResult.text }}</div>
-          </template>
-          <template v-else>
-            <div class="text-secondary">아직 분석 결과가 없습니다.</div>
-          </template>
         </div>
       </div>
     </main>
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, nextTick, onBeforeUnmount, watch, computed } from 'vue'
 import { chatService } from '../services/api'
-
+import StockRecommendationList from '../components/StockRecommendationList.vue'
+import StockAnalysisResult from '../components/StockAnalysisResult.vue'
 
 const userInput = ref('')
 const chatContainer = ref(null)
@@ -187,6 +291,40 @@ const isHistoryCollapsed = ref(false)
 const chatHistory = ref([])
 const messages = ref([])
 const analysisResult = ref(null)
+const isLoading = ref(false)
+const error = ref(null)
+const showESGAnalysis = ref(true)
+const showRiskAnalysis = ref(true)
+const currentPage = ref(1)
+const itemsPerPage = 10
+const isCollecting = ref(false)
+const collectionStatus = ref(null)
+
+const displayedRecommendations = computed(() => {
+  if (!analysisResult.value?.analysis_result) return []
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  // 한글/영문 필드 모두 지원
+  return analysisResult.value.analysis_result.slice(start, end).map(stock => ({
+    name: stock.name || stock['종목명'],
+    market: stock.market || stock['시장구분'] || stock['market'],
+    currentPrice: stock.currentPrice || stock['현재가'],
+    changeRate: stock.changeRate || stock['등락률'],
+    volume: stock.volume || stock['거래량'],
+    marketCap: stock.marketCap || stock['시가총액'],
+    reason: stock.reason || stock['추천이유'] || stock['reason'],
+  }))
+})
+
+const totalPages = computed(() => {
+  if (!analysisResult.value?.analysis_result) return 1
+  return Math.ceil(analysisResult.value.analysis_result.length / itemsPerPage)
+})
+
+const formatNumber = (value) => {
+  if (typeof value !== 'number') return value
+  return new Intl.NumberFormat('ko-KR').format(value)
+}
 
 // 새 채팅 시작: 모든 상태 초기화
 const startNewChat = () => {
@@ -224,56 +362,153 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
 })
 
-const sendMessage = async () => {
-  if (!userInput.value.trim()) return
-
-  // 만약 이전에 히스토리에서 불러온 채팅이라면 새 채팅으로 전환
-  if (selectedChat.value) {
-    startNewChat()
+const getCriteriaName = (criteria) => {
+  const criteriaNames = {
+    market_cap: '시가총액',
+    roe: 'ROE',
+    profit_margin: '순이익률',
+    market_growth: '시가총액 증가율',
+    future_cash_flow: '미래 현금흐름',
+    growth_potential: '성장성'
   }
-
-  // 사용자 메시지 추가
-  const userMessage = {
-    content: userInput.value,
-    isUser: true
-  }
-  messages.value.push(userMessage)
-
-  try {
-    // 실제 백엔드에 메시지 전송
-    const response = await chatService.sendMessage(userInput.value)
-    let aiResponse = response.response
-    let parsed = {}
-    try {
-      parsed = typeof aiResponse === 'string' ? JSON.parse(aiResponse) : aiResponse
-    } catch (e) {
-      parsed = { content_type: 'text', text: aiResponse }
-    }
-    messages.value.push({
-      content: parsed.text || aiResponse,
-      isUser: false
-    })
-    // 분석 결과 영역에 구조화 데이터 바인딩
-    analysisResult.value = parsed
-  } catch (error) {
-    console.error('Failed to send message:', error)
-    const errorMessage = {
-      content: '죄송합니다. 메시지 전송 중 오류가 발생했습니다.',
-      isUser: false
-    }
-    messages.value.push(errorMessage)
-    analysisResult.value = null
-  }
-
-  userInput.value = ''
-  await nextTick()
-  scrollToBottom()
+  return criteriaNames[criteria] || criteria
 }
 
-const scrollToBottom = () => {
-  if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+// 시장 데이터 수집
+const collectMarketData = async () => {
+  isCollecting.value = true
+  collectionStatus.value = null
+  
+  try {
+    const response = await chatService.collectMarketData()
+    collectionStatus.value = {
+      success: true,
+      message: `데이터 수집 완료 (${response.data_count}건)`
+    }
+  } catch (e) {
+    collectionStatus.value = {
+      success: false,
+      message: e.message || '데이터 수집 중 오류가 발생했습니다.'
+    }
+  } finally {
+    isCollecting.value = false
   }
+}
+
+// 분석 재시도
+const retryAnalysis = async () => {
+  error.value = null
+  await getStockRecommendations()
+}
+
+// 기존 sendMessage 함수 수정
+const sendMessage = async () => {
+  if (!userInput.value.trim()) return
+  
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    // 사용자 메시지 추가
+    messages.value.push({
+      content: userInput.value,
+      isUser: true
+    })
+
+    // 메시지 타입 결정
+    let messageType = 'general_chat'
+    const message = userInput.value.toLowerCase()
+    
+    if (message.includes('추천') || message.includes('유망')) {
+      messageType = 'stock_recommendation'
+    } else if (message.includes('분석')) {
+      messageType = 'stock_analysis'
+    }
+
+    const response = await chatService.sendMessage(userInput.value, messageType)
+    
+    // AI 응답 추가
+    messages.value.push({
+      content: response.content || '응답을 받지 못했습니다.',
+      isUser: false
+    })
+    
+    // 분석 결과가 있는 경우 처리
+    if (response.analysis_result) {
+      let resultArr = response.analysis_result
+      if (response.recommendations && Array.isArray(response.recommendations)) {
+        resultArr = response.recommendations
+      }
+      analysisResult.value = {
+        message_type: response.message_type || messageType,
+        analysis_result: resultArr
+      }
+    }
+    
+    userInput.value = ''
+    
+  } catch (e) {
+    console.error('Error in sendMessage:', e)
+    // 개선: 백엔드 안내 메시지 우선 표시
+    let msg = '분석 중 오류가 발생했습니다.'
+    if (e.response && e.response.data && e.response.data.detail) {
+      msg = e.response.data.detail
+    } else if (e.message) {
+      msg = e.message
+    }
+    error.value = msg
+    // 에러 메시지도 채팅에 추가
+    messages.value.push({
+      content: `오류: ${msg}`,
+      isUser: false,
+      isError: true
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const getStockAnalysis = async (stockCode) => {
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    const response = await chatService.getStockAnalysis(stockCode)
+    analysisResult.value = {
+      message_type: 'stock_analysis',
+      analysis_result: response
+    }
+  } catch (e) {
+    error.value = e.message || '종목 분석 중 오류가 발생했습니다.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const getStockRecommendations = async (market = 'KOSPI') => {
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    const response = await chatService.getStockRecommendations({
+      market_segment: market,
+      include_esg: showESGAnalysis.value,
+      include_risk_analysis: showRiskAnalysis.value
+    })
+    
+    analysisResult.value = {
+      message_type: 'stock_recommendation',
+      analysis_result: response.recommendations
+    }
+  } catch (e) {
+    error.value = e.message || '종목 추천을 가져오는데 실패했습니다.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const backToRecommendations = () => {
+  analysisResult.value = null
 }
 
 const loadChat = (chat) => {
@@ -404,5 +639,19 @@ header {
 .toggle-history-btn {
   transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
   z-index: 20;
+}
+
+/* 새로운 스타일 추가 */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
