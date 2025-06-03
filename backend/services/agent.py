@@ -8,9 +8,6 @@ from langchain.schema import BaseMessage, HumanMessage, SystemMessage
 from langchain.tools import BaseTool
 from core.config import settings
 from services.buffett_filter_tool_simple import BuffettFilter
-from services.news_tool import NewsTool
-from services.valuation_tool import ValuationTool
-from services.esg_analysis_tool import ESGAnalysisTool
 from services.advanced_analysis_tool import AdvancedAnalysisTool
 from services.logger import LoggerService
 from services.data_providers.financial_services_stock import fss_provider
@@ -63,9 +60,6 @@ class WarrenBuffettAgent:
         # 도구 초기화
         self.tools = [
             BuffettFilter(),
-            NewsTool(),
-            ValuationTool(),
-            ESGAnalysisTool(),
             AdvancedAnalysisTool()
         ]
         
@@ -75,16 +69,14 @@ class WarrenBuffettAgent:
         1. 버핏 필터: 워렌 버핏의 투자 기준에 따라 종목을 평가
         2. 뉴스 분석: 관련 뉴스와 시장 동향 분석
         3. 가치 평가: 기업의 내재가치와 적정주가 평가
-        4. ESG 분석: 환경, 사회, 지배구조 측면의 분석
-        5. 고급 분석: 기술적, 펀더멘털, 시장 심리 분석
+        4. 고급 분석: 기술적, 펀더멘털, 시장 심리 분석
         
         분석 결과는 다음 형식으로 제공하세요:
         1. 종목 개요
         2. 버핏 기준 평가
         3. 가치 평가
-        4. ESG 분석
-        5. 리스크 분석
-        6. 투자 추천
+        4. 리스크 분석
+        5. 투자 추천
         """
         
         # 에이전트 초기화

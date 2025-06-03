@@ -10,7 +10,6 @@ import logging
 import random
 
 from .data_providers.opendart_api import opendart_provider
-from .esg_analysis_tool import esg_analyzer
 from .advanced_analysis_tool import advanced_analyzer
 
 class BuffettFilterInput(BaseModel):
@@ -163,11 +162,6 @@ class BuffettFilterTool(BaseTool):
             "valuation_score": self._score_valuation_criteria(stock)
         }
         
-        # ESG 점수 (모의)
-        esg_score = 0
-        if include_esg:
-            esg_score = random.randint(60, 90)
-        
         # 리스크 점수 (모의)
         risk_score = 0
         if include_risk_analysis:
@@ -175,8 +169,6 @@ class BuffettFilterTool(BaseTool):
         
         # 가중 평균 계산
         all_scores = {**basic_scores}
-        if include_esg:
-            all_scores["esg_score"] = esg_score
         if include_risk_analysis:
             all_scores["risk_score"] = risk_score
         
