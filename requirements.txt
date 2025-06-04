@@ -28,4 +28,5 @@ pandas
 matplotlib 
 seaborn 
 plotly
-
+xmltodict
+OpenDartReader
