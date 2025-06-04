@@ -1,0 +1,50 @@
+{
+    "company_info": {
+      "corp_code": "005930",
+      "corp_name": "삼성전자"
+    },
+    "financial_statements": [
+      {
+        "bsns_year": "2023",
+        "reprt_code": "11011", 
+        "account_nm": "당기순이익", 
+        "thstrm_amount": "15487000000000", 
+        "sj_div": "IS" 
+      },
+      {
+        "bsns_year": "2023",
+        "reprt_code": "11011",
+        "account_nm": "자본총계",
+        "thstrm_amount": "450000000000000",
+        "sj_div": "BS"
+      },
+      {
+        "bsns_year": "2023",
+        "reprt_code": "11011",
+        "account_nm": "매출액",
+        "thstrm_amount": "258935000000000",
+        "sj_div": "IS"
+      },
+      {
+        "bsns_year": "2023",
+        "reprt_code": "11011",
+        "account_nm": "부채총계",
+        "thstrm_amount": "90000000000000",
+        "sj_div": "BS"
+      },
+      {
+        "bsns_year": "2023", 
+        "reprt_code": "11011",
+        "account_nm": "현금배당금",
+        "account_detail": "배당금지급", 
+        "thstrm_amount": "9800000000000",
+        "sj_div": "CF"
+      }
+    ],
+    "dividend_info": {
+      "dividends": [
+        {"year": 2023, "dps": 1444},
+        {"year": 2022, "dps": 1444}
+      ]
+    }
+  }

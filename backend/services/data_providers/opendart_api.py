@@ -74,32 +74,48 @@ class OpenDARTProvider:
             self.logger.error(f"Error getting company info: {str(e)}")
             return self._get_mock_company_info(corp_code)
     
-    async def get_financial_statement(self, corp_code: str, year: Optional[int] = None) -> Dict[str, Any]:
+    async def get_financial_statement(self, corp_code: str, bsns_year: str, reprt_code: str = "11011", fs_div: Optional[str] = None) -> Dict[str, Any]:
         """
         재무제표 정보를 조회합니다.
+        API Endpoint: /fnlttSinglAcnt.json (단일회사 주요계정)
+        또는 /fnlttMultiAcnt.json (다중회사 주요계정) - 필요시 확장
+        또는 /fnlttXbrl.json (XBRL 원본파일 관련)
         """
         if self.use_mock_data:
-            return self._get_mock_financial_statements(corp_code, 1)[0].__dict__
-            
-        try:
-            if year is None:
-                year = datetime.now().year
+            # Mock 데이터 반환 시에도 bsns_year를 사용하도록 _get_mock_financial_statements 수정 필요 또는 단순화
+            mock_statements = self._get_mock_financial_statements(corp_code, 1)
+            if mock_statements:
+                # 실제 API는 bsns_year에 해당하는 데이터만 반환하므로, mock도 그에 맞추거나,
+                # 여기서는 첫번째 mock statement의 year가 요청된 bsns_year와 일치한다고 가정.
+                # 더 정교한 mock 로직이 필요할 수 있습니다.
+                for stmt_data_class in mock_statements:
+                    if str(stmt_data_class.year) == bsns_year:
+                         # FinancialStatement dataclass를 dict로 변환하여 반환 (원래 로직과 유사하게)
+                         # 실제 API는 list를 포함하는 dict를 반환하므로, 그 구조를 맞춰야함.
+                         # 예: {'status': '000', 'message': '정상', 'list': [stmt_data_class.__dict__]}
+                         # 단순화를 위해 여기서는 단일 항목의 dict로 가정하고 실제 API와 맞춰야 함.
+                        return {'status': '000', 'message': '정상', 'list': [{**stmt_data_class.__dict__, 'bsns_year': bsns_year}]}
+            return {'status': '013', 'message': '조회된 데이터가 없습니다.', 'list': []} # 데이터 없음 Mock
 
+        try:
             url = f"{self.base_url}/fnlttSinglAcnt.json"
             params = {
                 "crtfc_key": self.api_key,
                 "corp_code": corp_code,
-                "bsns_year": str(year),
-                "reprt_code": "11011"  # 1분기보고서
+                "bsns_year": bsns_year, # Use provided bsns_year
+                "reprt_code": reprt_code # Use provided reprt_code
             }
+            if fs_div: # fs_div가 제공된 경우에만 파라미터에 추가
+                params["fs_div"] = fs_div
 
             async with httpx.AsyncClient() as client:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            self.logger.error(f"Error getting financial statement: {str(e)}")
-            return self._get_mock_financial_statements(corp_code, 1)[0].__dict__
+            self.logger.error(f"Error getting financial statement for {corp_code}, {bsns_year}: {str(e)}")
+            # 오류 발생 시에도 API와 유사한 빈 데이터 구조 반환
+            return {'status': '999', 'message': f'Error: {str(e)}', 'list': []}
     
     async def get_corp_code(self, stock_code: str) -> Optional[str]:
         """
@@ -396,7 +412,7 @@ class OpenDARTProvider:
                 company_info = await self.get_company_info(stock_code)
                 
                 # 2. 재무제표 데이터 조회
-                financial_data = await self.get_financial_statement(stock_code)
+                financial_data = await self.get_financial_statement(stock_code, str(datetime.now().year), "11011")
                 
                 # 3. 배당 정보 조회
                 dividend_data = await self._get_dividend_info(client, stock_code)

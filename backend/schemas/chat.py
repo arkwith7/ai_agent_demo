@@ -8,6 +8,8 @@ class MessageType(str, Enum):
     GENERAL_CHAT = "general_chat"
     STOCK_RECOMMENDATION = "stock_recommendation"
     STOCK_ANALYSIS = "stock_analysis"
+    ANALYSIS = "analysis"
+    ERROR = "error"
 
 class ChatMessage(BaseModel):
     message_type: MessageType

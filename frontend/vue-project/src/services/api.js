@@ -112,7 +112,7 @@ export const chatService = {
 
   async sendMessage(message, messageType = 'general_chat') {
     const response = await api.post('/chat/message', {
-      message,
+      content: message,
       message_type: messageType
     });
     return response.data;
@@ -129,21 +129,21 @@ export const chatService = {
   },
 
   async getChatHistory(page = 1, size = 20) {
-    const response = await api.get(`/chat/history?skip=${(page - 1) * size}&limit=${size}`);
+    const response = await api.get(`/chat/history?page=${page}&size=${size}`);
     return response.data;
   },
 
   async searchChatHistory(keyword, startDate, endDate, page = 1, size = 20) {
     try {
       const params = new URLSearchParams({
-        skip: ((page - 1) * size).toString(),
-        limit: size.toString()
+        page: page.toString(),
+        size: size.toString()
       });
       if (keyword) params.append('keyword', keyword);
       if (startDate) params.append('start_date', startDate);
       if (endDate) params.append('end_date', endDate);
       
-      const response = await api.get(`/chat/sessions/search?${params.toString()}`);
+      const response = await api.get(`/chat/history/search?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error searching chat history:', error);
@@ -153,7 +153,7 @@ export const chatService = {
 
   async summarizeChatHistory(historyId) {
     try {
-      const response = await api.post(`/ai/chat/history/${historyId}/summarize`);
+      const response = await api.post(`/chat/history/${historyId}/summarize`);
       return response.data;
     } catch (error) {
       console.error('Error summarizing chat history:', error);

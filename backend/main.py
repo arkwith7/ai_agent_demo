@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from api.routers.analysis import router as analysis_router  # 기존 simple 라우터 (analysis, chat)
-from api.routers.chat import router as  chat_router  # 기존 simple 라우터 (analysis, chat)
-from api.routers.auth import router as auth_router  # JWT 발행이 구현된 실제 auth 라우터
-from api.routers.user_management import router as user_router
+from api.routers.analysis import router as analysis_router # 주식 분석 및 추천 관련 API
+from api.routers.chat import router as chat_router       # 채팅 관련 API
+from api.routers.auth import router as auth_router       # 사용자 인증 API
+from api.routers.user_management import router as user_router # 사용자 관리 API
 from core.config import settings
 from db.init_db import init_models
 

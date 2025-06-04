@@ -114,10 +114,17 @@
               <div class="space-y-4">
                 <div class="flex justify-between items-center">
                   <h2 class="text-xl font-semibold">추천 종목</h2>
-                  <span class="text-sm text-secondary">총 {{ analysisResult.analysis_result.length }}개</span>
+                  <span class="text-sm text-secondary">총 {{ analysisResult.analysis_result?.length || 0 }}개</span>
                 </div>
                 
-                <div class="space-y-4">
+                <template v-if="!analysisResult.analysis_result || analysisResult.analysis_result.length === 0">
+                  <div class="text-secondary/80 text-center py-8">
+                    <p class="text-lg font-semibold">추천 종목 없음</p>
+                    <p>현재 조건에 맞는 추천 종목을 찾지 못했습니다.</p>
+                  </div>
+                </template>
+                
+                <div v-else class="space-y-4">
                   <div v-for="(stock, index) in displayedRecommendations" :key="index" 
                        class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
                     <div class="flex justify-between items-start mb-2">
@@ -160,7 +167,7 @@
                 </div>
 
                 <!-- 페이지네이션 -->
-                <div v-if="analysisResult.analysis_result.length > 10" 
+                <div v-if="analysisResult.analysis_result && analysisResult.analysis_result.length > itemsPerPage" 
                      class="flex justify-center items-center space-x-4 mt-4">
                   <button 
                     @click="currentPage--" 
@@ -383,7 +390,7 @@ const collectMarketData = async () => {
     const response = await chatService.collectMarketData()
     collectionStatus.value = {
       success: true,
-      message: `데이터 수집 완료 (${response.data_count}건)`
+      message: `데이터 수집 완료 (${response.collected_count}건)`
     }
   } catch (e) {
     collectionStatus.value = {
