@@ -1,3 +1,9 @@
+# API 의존성(Dependency) 정의 모듈
+# - get_current_user: JWT 토큰 검증 및 사용자 조회
+# - get_current_active_user: 활성 사용자 검증
+# - get_current_admin_user: 관리자 권한 검증
+# - require_admin_or_self, check_admin_or_self_access: 관리자 또는 본인 접근 제어
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession

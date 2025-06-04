@@ -1,3 +1,12 @@
+# API 라우터: 사용자 관리 관련 엔드포인트 정의
+# - GET /users: 사용자 목록 조회 (관리자 전용)
+# - POST /users: 새 사용자 생성 (관리자 전용)
+# - GET /users/{id}: 사용자 상세 조회
+# - PUT /users/{id}: 사용자 정보 수정
+# - DELETE /users/{id}: 사용자 삭제(비활성화)
+# - GET /users/{id}/token-usage: 사용자 토큰 사용량 통계
+# - GET /me, PUT /me: 내 정보 조회/수정
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List

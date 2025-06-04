@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from routers import analysis, chat, auth
+from api.routers.analysis import router as analysis_router  # 기존 simple 라우터 (analysis, chat)
+from api.routers.chat import router as  chat_router  # 기존 simple 라우터 (analysis, chat)
+from api.routers.auth import router as auth_router  # JWT 발행이 구현된 실제 auth 라우터
+from api.routers.user_management import router as user_router
+from core.config import settings
 from db.init_db import init_models
 
 app = FastAPI(
@@ -20,9 +24,10 @@ app.add_middleware(
 )
 
 # 라우터 등록
-app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
-app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(analysis_router, prefix="/api/analysis", tags=["analysis"])
+app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(user_router, prefix="/api", tags=["users"])
 
 @app.get("/")
 async def root():

@@ -1,3 +1,9 @@
+# API 라우터: 채팅 세션 및 메시지 관련 CRUD 엔드포인트
+# - POST /sessions: 대화 세션 생성
+# - GET /sessions: 세션 목록 조회
+# - GET /sessions/{id}/messages: 세션 메시지 목록 조회
+# - POST /sessions/{id}/messages: 메시지 추가
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from api import deps

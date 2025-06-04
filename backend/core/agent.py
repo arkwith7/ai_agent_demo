@@ -7,6 +7,7 @@ from services.stock_analysis import StockAnalysisService
 from services.cache import CacheService
 from services.logger import LoggerService
 from services.data_providers import OpenDARTProvider, FinancialServicesStockProvider
+from schemas.chat import MessageType  # 채팅 메시지 타입 상수
 
 class StockAnalysisAgent(ABC):
     @abstractmethod
@@ -393,4 +394,13 @@ class StockAnalysisAgent(ABC):
             return market_data
         except Exception as e:
             self.logger.error(f"Error collecting market data for {stock_code}: {str(e)}")
-            raise 
+            raise
+
+# LangChain 기반 구현체 팩토리 함수 통합
+from services.agent import get_agent as _get_langchain_agent
+
+async def get_agent() -> StockAnalysisAgent:
+    """
+    LangChain 기반 StockAnalysisAgent 구현체 반환
+    """
+    return await _get_langchain_agent()

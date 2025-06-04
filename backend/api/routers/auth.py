@@ -1,3 +1,8 @@
+# API 라우터: 인증 및 토큰 관련 엔드포인트
+# - POST /api/auth/register: 사용자 회원가입
+# - POST /api/auth/login: JWT 토큰 발급
+# - POST /api/auth/refresh: 토큰 갱신
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession

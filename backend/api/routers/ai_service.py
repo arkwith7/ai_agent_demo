@@ -1,3 +1,9 @@
+# API 라우터: 고급 AI 서비스 및 Warren Buffett 분석
+# - /chat: 메시지 타입별 AI 처리 (추천, 분석, 일반 채팅)
+# - /warren-buffett-analysis: 8단계 강화된 워런 버핏 분석
+# - /stock-analysis: 일반 종목 분석
+# - /me/chat-history: 사용자 채팅 기록 조회
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 from schemas.user import UserRead
 from api import deps
